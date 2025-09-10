@@ -91,7 +91,7 @@ export const HomeScreen = () => {
                     />
                 </Layout>
                 <Text category="h3" style={styles.welcomeText}>
-                    Hola 👋
+                    Bienvenido
                 </Text>
                 <Text category="p1" style={styles.subtitleText}>
                     Todo está funcionando correctamente
@@ -125,10 +125,10 @@ export const HomeScreen = () => {
                                 </Text>
                             </Layout>
                         </Layout>
-                        {/*  <Icon
-                            name="chevron-right-outline"
+                        { <MyIcon
+                            name="settings-outline"
 
-                        /> */}
+                        />}
                     </Layout>
                 </TouchableWithoutFeedback>
             </Layout>
@@ -137,12 +137,13 @@ export const HomeScreen = () => {
             <Layout style={styles.logoutSection}>
                 <TouchableWithoutFeedback onPress={logout}>
                     <Layout style={styles.logoutButton}>
-                        <MyIcon
-                            name="corner-down-left-outline"
-                        />
+
                         <Text category="s1" style={styles.logoutText}>
                             Cerrar sesión
                         </Text>
+                        <MyIcon
+                            name="corner-down-left-outline"
+                        />
                     </Layout>
                 </TouchableWithoutFeedback>
             </Layout>
