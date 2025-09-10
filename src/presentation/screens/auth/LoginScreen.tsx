@@ -23,7 +23,11 @@ export const LoginScreen = ({ navigation }: Props) => {
 
     // Verificar si existen credenciales biométricas al cargar el componente
     useEffect(() => {
-        const checkBiometricCredentials = async () => {
+
+        const checkBiometricSupportAndCredentials = async () => {
+            const biometryType = await Keychain.getSupportedBiometryType();
+            console.log('Supported Biometry Type:', biometryType);
+
             try {
                 // Intentar acceder sin mostrar prompt
                 const credentials = await Keychain.hasGenericPassword();
@@ -36,7 +40,7 @@ export const LoginScreen = ({ navigation }: Props) => {
             }
         };
 
-        checkBiometricCredentials();
+        checkBiometricSupportAndCredentials();
     }, []);
 
     const onLogin = async () => {

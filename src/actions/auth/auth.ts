@@ -42,6 +42,13 @@ export const authValidateToken = async (): Promise<{ user: User, token: string }
         const { data } = await ditoApi.get<LoginResponse>('/auth/check-status');
         return returnUserToken(data);
     } catch (error: any) {
+        // Si es error de autenticación (400, 401, 403), no mostrar error
+        if (error.response?.status === 400 || error.response?.status === 401 || error.response?.status === 403) {
+            console.log('Token validation: No valid token found (silent)');
+            return null;
+        }
+
+        // Para otros errores sí mostrar el log
         let message = 'Error validando el token.';
         if (error.response && error.response.data && error.response.data.message) {
             message = error.response.data.message;
@@ -51,9 +58,7 @@ export const authValidateToken = async (): Promise<{ user: User, token: string }
         console.error('Token validation error:', message, error);
         return null;
     }
-};
-
-// 🔹 nuevo: login usando el deviceToken
+};// 🔹 nuevo: login usando el deviceToken
 export const authLoginWithDeviceToken = async (deviceToken: string): Promise<{ user: User, token: string } | null> => {
     try {
         const { data } = await ditoApi.post<LoginResponse>('/auth/login-with-device-token', { deviceToken });
