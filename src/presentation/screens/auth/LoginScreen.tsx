@@ -5,24 +5,67 @@ import { MyIcon } from "../../components/ui/MyIcon";
 import { StackScreenProps } from "@react-navigation/stack";
 import { RootStackParamList } from "../../navigation/StackNavigator";
 import { API_URL } from "@env";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuthStore } from "../../store/auth/useAuthStore";
+import * as Keychain from 'react-native-keychain';
 
 interface Props extends StackScreenProps<RootStackParamList, 'LoginScreen'> { }
 
 
 export const LoginScreen = ({ navigation }: Props) => {
 
-    const { login } = useAuthStore();
+    const { login, enableBiometrics, loginWithBiometrics } = useAuthStore();
 
     const [form, setForm] = useState({ email: '', password: '' });
+    const [hasBiometricCredentials, setHasBiometricCredentials] = useState(false);
 
     const { height } = useWindowDimensions();
 
+    // Verificar si existen credenciales biométricas al cargar el componente
+    useEffect(() => {
+        const checkBiometricCredentials = async () => {
+            try {
+                // Verificación silenciosa usando opciones que no activen la biometría
+                const keychainOptions = {
+                    accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
+                    authenticationType: Keychain.AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS,
+                    showModal: false,
+                    kSecAccessControl: 'kSecAccessControlBiometryAny',
+                };
+
+                // Intentar acceder sin mostrar prompt
+                const credentials = await Keychain.hasGenericPassword();
+
+                console.log('Has biometric credentials:', credentials);
+                setHasBiometricCredentials(credentials);
+            } catch (error) {
+                console.log('Error checking biometric credentials:', error);
+                setHasBiometricCredentials(false);
+            }
+        };
+
+        checkBiometricCredentials();
+    }, []);
+
     const onLogin = async () => {
         const result = await login(form.email, form.password);
-        if (result) return;
 
+        console.log(result)
+        if (result) {
+            // Login exitoso, mostrar opción para habilitar biometría
+            /*  Alert.alert(
+                 'Login exitoso',
+                 '¿Deseas habilitar el acceso biométrico para futuros ingresos?',
+                 [
+                     { text: 'Ahora no', style: 'cancel' },
+                     {
+                         text: 'Habilitar',
+                         onPress: () => enableBiometrics()
+                     }
+                 ]
+             ); */
+            return;
+        }
 
         Alert.alert('Login incorrecto', 'Revise sus credenciales');
     }
@@ -33,7 +76,10 @@ export const LoginScreen = ({ navigation }: Props) => {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <Layout style={{ flex: 1 }}>
+                <Layout style={{
+                    flex:
+                        1
+                }}>
                     <ScrollView style={{ marginHorizontal: 40 }} keyboardShouldPersistTaps="handled">
                         <Layout style={{ paddingTop: height * 0.25 }}>
                             <Text category="h1">Ingresar</Text>
@@ -76,55 +122,63 @@ export const LoginScreen = ({ navigation }: Props) => {
                             </Layout>
                         </TouchableWithoutFeedback>
 
-                {/* Separador visual */}
-                <Layout style={{ marginVertical: 20, alignItems: 'center' }}>
-                    <Text category="c1" appearance="hint">o ingresa con</Text>
-                </Layout>
+                        {/* Mostrar botones biométricos solo si hay credenciales guardadas */}
+                        {hasBiometricCredentials && (
+                            <>
+                                {/* Separador visual */}
+                                <Layout style={{ marginVertical: 20, alignItems: 'center' }}>
+                                    <Text category="c1" appearance="hint">o ingresa con</Text>
+                                </Layout>
 
-                {/* Botones de autenticación biométrica */}
-                <Layout style={{ flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: 10 }}>
-                    {/* Botón de ingresar por huella */}
-                    <Layout style={{ flex: 1, marginRight: 5 }}>
-                        <Button
-                            appearance="outline"
-                            status="info"
-                            accessoryLeft={<MyIcon name="hash-outline" />}
-                            onPress={() => { }}
-                            style={{
-                                borderRadius: 12,
-                                paddingVertical: 12
-                            }}
-                        >Huella</Button>
-                    </Layout>
+                                {/* Botones de autenticación biométrica */}
+                                <Layout style={{ flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: 10 }}>
+                                    {/* Botón de ingresar por huella */}
+                                    <Layout style={{ flex: 1, marginRight: 5 }}>
+                                        <Button
+                                            appearance="outline"
+                                            status="info"
+                                            accessoryLeft={<MyIcon name="hash-outline" />}
+                                            onPress={() => loginWithBiometrics()}
+                                            style={{
+                                                borderRadius: 12,
+                                                paddingVertical: 12
+                                            }}
+                                        >Huella</Button>
+                                    </Layout>
 
-                    {/* Botón de ingresar por FaceID */}
-                    <Layout style={{ flex: 1, marginLeft: 5 }}>
-                        <Button
-                            appearance="outline"
-                            status="info"
-                            accessoryLeft={<MyIcon name="eye-outline" />}
-                            onPress={() => { }}
-                            style={{
-                                borderRadius: 12,
-                                paddingVertical: 12
-                            }}
-                        >Face ID</Button>
-                    </Layout>
-                </Layout>
-                {/* Space */}
-                <Layout style={{ height: 20 }} />
-                <Layout style={{
-                    alignItems: 'flex-end',
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                }}>
-                    <Text>¿No tienes una cuenta?</Text>
-                    <Text category="s1" status="primary" onPress={() => navigation.replace('RegisterScreen')}>
-                        {''}
-                        Crea una
-                        {''}
-                    </Text>
-                </Layout>
+                                    {/* Botón de ingresar por FaceID */}
+                                    <Layout style={{ flex: 1, marginLeft: 5 }}>
+                                        <Button
+                                            appearance="outline"
+                                            status="info"
+                                            accessoryLeft={<MyIcon name="eye-outline" />}
+                                            onPress={() => loginWithBiometrics()}
+                                            style={{
+                                                borderRadius: 12,
+                                                paddingVertical: 12
+                                            }}
+                                        >Face ID</Button>
+                                    </Layout>
+                                </Layout>
+                            </>
+                        )}
+
+
+
+                        {/* Space */}
+                        <Layout style={{ height: 20 }} />
+                        <Layout style={{
+                            alignItems: 'flex-end',
+                            flexDirection: 'row',
+                            justifyContent: 'center',
+                        }}>
+                            <Text>¿No tienes una cuenta?</Text>
+                            <Text category="s1" status="primary" onPress={() => navigation.replace('RegisterScreen')}>
+                                {''}
+                                Crea una
+                                {''}
+                            </Text>
+                        </Layout>
                     </ScrollView>
                 </Layout>
             </TouchableWithoutFeedback>

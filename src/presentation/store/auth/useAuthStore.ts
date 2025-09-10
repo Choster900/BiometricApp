@@ -1,8 +1,9 @@
 import { create } from "zustand";
 import { User } from "../../../domain/entities/user";
 import { AuthStatus } from "../../../infrastructure/interfaces/auth.status";
-import { authLogin, authValidateToken } from "../../../actions/auth/auth";
+import { authLogin, authValidateToken, authLoginWithDeviceToken, authEnableBiometrics } from "../../../actions/auth/auth";
 import { StorageAdapter } from "../../../config/adapters/async-storage";
+import * as Keychain from 'react-native-keychain';
 
 
 
@@ -13,6 +14,8 @@ export interface AuthState {
 
 
     login: (email: string, password: string) => Promise<boolean>;
+    loginWithBiometrics: () => Promise<boolean>;
+    enableBiometrics: () => Promise<void>;
     checkStatus: () => Promise<boolean>;
     logout: () => void;
 }
@@ -36,6 +39,9 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
         await StorageAdapter.setItem('token', resp.token);
 
+
+
+
         const storeToken = await StorageAdapter.getItem('token');
         console.log('TOKEN ALMACENADO:', storeToken);
 
@@ -45,6 +51,53 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
         return true;
 
+    },
+
+    // 🔹 login usando biometría
+    loginWithBiometrics: async () => {
+        try {
+            const credentials = await Keychain.getGenericPassword();
+            if (!credentials) return false;
+
+            const deviceToken = credentials.password;
+            console.log(deviceToken)
+
+            const resp = await authLoginWithDeviceToken(deviceToken);
+            if (!resp) return false;
+
+            await StorageAdapter.setItem('token', resp.token);
+
+            set({ status: 'authenticated', token: resp.token, user: resp.user });
+            return true;
+
+        } catch (e) {
+            console.log("Biometric login failed:", e);
+            return false;
+        }
+    },
+
+    // 🔹 habilitar biometría después del login normal
+    enableBiometrics: async () => {
+        const { user } = get();
+        if (!user) return;
+
+        const resp = await authEnableBiometrics();
+        if (!resp) return;
+
+        const { deviceToken } = resp;
+
+
+        await Keychain.setGenericPassword(
+            'device',
+            deviceToken,
+            {
+                accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
+                accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED
+            }
+        );
+        console.log(resp)
+
+        set({ user: { ...user, biometricEnabled: true } });
     },
 
     checkStatus: async () => {
