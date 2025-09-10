@@ -25,14 +25,6 @@ export const LoginScreen = ({ navigation }: Props) => {
     useEffect(() => {
         const checkBiometricCredentials = async () => {
             try {
-                // Verificación silenciosa usando opciones que no activen la biometría
-                const keychainOptions = {
-                    accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
-                    authenticationType: Keychain.AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS,
-                    showModal: false,
-                    kSecAccessControl: 'kSecAccessControlBiometryAny',
-                };
-
                 // Intentar acceder sin mostrar prompt
                 const credentials = await Keychain.hasGenericPassword();
 
@@ -52,18 +44,7 @@ export const LoginScreen = ({ navigation }: Props) => {
 
         console.log(result)
         if (result) {
-            // Login exitoso, mostrar opción para habilitar biometría
-            /*  Alert.alert(
-                 'Login exitoso',
-                 '¿Deseas habilitar el acceso biométrico para futuros ingresos?',
-                 [
-                     { text: 'Ahora no', style: 'cancel' },
-                     {
-                         text: 'Habilitar',
-                         onPress: () => enableBiometrics()
-                     }
-                 ]
-             ); */
+
             return;
         }
 
