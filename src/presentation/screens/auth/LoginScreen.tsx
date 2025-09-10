@@ -91,7 +91,6 @@ export const LoginScreen = ({ navigation }: Props) => {
                                 onSubmitEditing={onLogin}
                             />
                         </Layout>
-                        <Text>{JSON.stringify(form)}</Text>
                         {/* Space */}
                         <Layout style={{ height: 20 }} />
                         <TouchableWithoutFeedback onPress={onLogin}>
