@@ -26,6 +26,13 @@ export const authLogin = async (email: string, password: string) => {
         const { data } = await ditoApi.post<LoginResponse>('/auth/login', { email, password });
         return returnUserToken(data);
     } catch (error: any) {
+
+        // Si es error de autenticación (400, 401, 403), no mostrar error
+        if (error.response?.status === 400 || error.response?.status === 401 || error.response?.status === 403) {
+            console.log('Token validation: No valid token found (silent)');
+            return null;
+        }
+
         let message = 'Ocurrió un error al iniciar sesión.';
         if (error.response && error.response.data && error.response.data.message) {
             message = error.response.data.message;

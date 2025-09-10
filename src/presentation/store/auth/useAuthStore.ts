@@ -33,6 +33,8 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
         if (!resp) {
             set({ status: 'unauthenticated', token: undefined, user: undefined });
+
+            return false;
         }
 
         // TODO: guardar en el storage el token
@@ -40,12 +42,6 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         await StorageAdapter.setItem('token', resp.token);
 
 
-
-
-        const storeToken = await StorageAdapter.getItem('token');
-        console.log('TOKEN ALMACENADO:', storeToken);
-
-        console.log('RESPUESTA', resp);
 
         set({ status: 'authenticated', token: resp.token, user: resp.user });
 

@@ -51,9 +51,22 @@ ditoApi.interceptors.response.use(
     },
     (error) => {
         if (error.response?.status === 400 || error.response?.status === 401 || error.response?.status === 403) {
-            console.log(`🔒 Auth error (silent): ${error.response.status} ${error.config?.url}`);
+            console.log('Error (silent):', {
+                status: error.response.status,
+                url: error.config?.url,
+                method: error.config?.method?.toUpperCase(),
+                message: error.response?.data?.message || 'No message',
+                data: error.response?.data
+            });
         } else {
-            console.error('❌ Response Error:', error.response?.status, error.response?.data);
+            console.error('❌ Response Error:', {
+                status: error.response?.status,
+                url: error.config?.url,
+                method: error.config?.method?.toUpperCase(),
+                message: error.response?.data?.message || error.message,
+                data: error.response?.data,
+                fullError: error
+            });
         }
         return Promise.reject(error);
     }
