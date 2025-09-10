@@ -1,13 +1,10 @@
-
 import { Layout, Text, Icon, Button } from "@ui-kitten/components"
-import { Alert, StyleSheet } from "react-native";
+import { Alert, StyleSheet, TouchableWithoutFeedback } from "react-native";
 import { useAuthStore } from "../../store/auth/useAuthStore";
 import { MyIcon } from "../../components/ui/MyIcon";
 import { authEnableBiometrics } from "../../../actions/auth/auth";
 import { useState, useEffect } from "react";
 import * as Keychain from 'react-native-keychain';
-
-
 
 export const HomeScreen = () => {
 
@@ -81,29 +78,73 @@ export const HomeScreen = () => {
             );
         }
     }
+
     return (
         <Layout style={styles.container}>
-            <Icon name="home-outline" fill="#3366FF" style={styles.icon} />
-            <Text category="h1" style={styles.title}>¡Bienvenido!</Text>
-            <Text category="s1" appearance="hint" style={styles.subtitle}>Esta es tu pantalla principal</Text>
-            <Button style={styles.logoutButton} appearance="ghost" status="danger" onPress={logout}>
-                Cerrar sesión
-            </Button>
+            {/* Header Section */}
+            <Layout style={styles.headerSection}>
+                <Layout style={styles.avatarContainer}>
+                    <Icon
+                        name="person-outline"
+                        style={styles.avatarIcon}
+                        fill="#4caf50"
+                    />
+                </Layout>
+                <Text category="h3" style={styles.welcomeText}>
+                    Hola 👋
+                </Text>
+                <Text category="p1" style={styles.subtitleText}>
+                    Todo está funcionando correctamente
+                </Text>
+            </Layout>
 
-            {/* Space */}
-            <Layout style={{ height: 20 }} />
-            {/* Botón dinámico para biometría */}
-            <Layout style={styles.biometricContainer}>
-                <Button
-                    appearance="ghost"
-                    status={hasBiometricCredentials ? "warning" : "info"}
-                    size="small"
-                    accessoryLeft={<MyIcon name={hasBiometricCredentials ? "shield-off-outline" : "settings-outline"} />}
-                    onPress={handleBiometricsAlert}
-                    disabled={false}
-                >
-                    {hasBiometricCredentials ? 'Deshabilitar biometría' : 'Configurar biometría'}
-                </Button>
+            {/* Quick Actions Card */}
+            <Layout style={styles.actionsCard}>
+                <Text category="h6" style={styles.cardTitle}>
+                    Configuración rápida
+                </Text>
+
+                {/* Biometric Setting */}
+                <TouchableWithoutFeedback onPress={handleBiometricsAlert}>
+                    <Layout style={styles.settingRow}>
+                        <Layout style={styles.settingLeft}>
+                            <Layout style={[
+                                styles.iconContainer,
+                                { backgroundColor: hasBiometricCredentials ? '#588851ff' : '#fde3e3ff' }
+                            ]}>
+                                <MyIcon
+                                    name={hasBiometricCredentials ? "checkmark-circle-outline" : "alert-triangle-outline"}
+                                />
+                            </Layout>
+                            <Layout style={styles.settingTextContainer}>
+                                <Text category="s1" style={styles.settingTitle}>
+                                    Acceso biométrico
+                                </Text>
+                                <Text category="c1" style={styles.settingSubtitle}>
+                                    {hasBiometricCredentials ? 'Activado' : 'Configurar autenticación'}
+                                </Text>
+                            </Layout>
+                        </Layout>
+                        {/*  <Icon
+                            name="chevron-right-outline"
+
+                        /> */}
+                    </Layout>
+                </TouchableWithoutFeedback>
+            </Layout>
+
+            {/* Logout Section */}
+            <Layout style={styles.logoutSection}>
+                <TouchableWithoutFeedback onPress={logout}>
+                    <Layout style={styles.logoutButton}>
+                        <MyIcon
+                            name="corner-down-left-outline"
+                        />
+                        <Text category="s1" style={styles.logoutText}>
+                            Cerrar sesión
+                        </Text>
+                    </Layout>
+                </TouchableWithoutFeedback>
             </Layout>
         </Layout>
     )
@@ -112,28 +153,116 @@ export const HomeScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: '#fafafa',
+        paddingHorizontal: 24,
+        paddingTop: 60,
+    },
+    headerSection: {
+        alignItems: 'center',
+        marginBottom: 40,
+        backgroundColor: 'transparent',
+    },
+    avatarContainer: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#e8f5e8',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#fff',
+        marginBottom: 16,
     },
-    icon: {
-        width: 64,
-        height: 64,
-        marginBottom: 24,
+    avatarIcon: {
+        width: 32,
+        height: 32,
     },
-    title: {
+    welcomeText: {
         marginBottom: 8,
+        fontWeight: '600',
+        color: '#1a1a1a',
     },
-    subtitle: {
-        color: '#888',
+    subtitleText: {
+        color: '#666',
+        textAlign: 'center',
+    },
+    actionsCard: {
+        backgroundColor: '#ffffff',
+        borderRadius: 16,
+        padding: 20,
         marginBottom: 32,
+        elevation: 0,
+        shadowOpacity: 0,
+        borderWidth: 1,
+        borderColor: '#f0f0f0',
+    },
+    cardTitle: {
+        marginBottom: 16,
+        fontWeight: '600',
+        color: '#1a1a1a',
+    },
+    settingRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 12,
+        backgroundColor: 'transparent',
+    },
+    settingLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+        backgroundColor: 'transparent',
+    },
+    iconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    settingIcon: {
+        width: 20,
+        height: 20,
+    },
+    settingTextContainer: {
+        flex: 1,
+        backgroundColor: 'transparent',
+    },
+    settingTitle: {
+        fontWeight: '500',
+        color: '#1a1a1a',
+        marginBottom: 2,
+    },
+    settingSubtitle: {
+        color: '#666',
+        fontSize: 12,
+    },
+    chevronIcon: {
+        width: 16,
+        height: 16,
+    },
+    logoutSection: {
+        marginTop: 'auto',
+        marginBottom: 40,
+        backgroundColor: 'transparent',
     },
     logoutButton: {
-        marginTop: 16,
-        width: 180,
-    },
-    biometricContainer: {
-        marginTop: 15,
+        flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#ffffff',
+        borderRadius: 12,
+        paddingVertical: 16,
+        borderWidth: 1,
+        borderColor: '#ffebee',
+    },
+    logoutIcon: {
+        width: 18,
+        height: 18,
+        marginRight: 8,
+    },
+    logoutText: {
+        color: '#f44336',
+        fontWeight: '500',
     },
 });

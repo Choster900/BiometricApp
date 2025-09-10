@@ -37,10 +37,8 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
             return false;
         }
 
-        // TODO: guardar en el storage el token
 
         await StorageAdapter.setItem('token', resp.token);
-
 
 
         set({ status: 'authenticated', token: resp.token, user: resp.user });
@@ -49,7 +47,6 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
     },
 
-    // 🔹 login usando biometría
     loginWithBiometrics: async () => {
         try {
             const credentials = await Keychain.getGenericPassword();
@@ -72,7 +69,6 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         }
     },
 
-    // 🔹 habilitar biometría después del login normal
     enableBiometrics: async () => {
         const { user } = get();
         if (!user) return;
