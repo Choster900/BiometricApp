@@ -75,21 +75,41 @@ export const LoginScreen = ({ navigation }: Props) => {
                                 >Ingresar</Button>
                             </Layout>
                         </TouchableWithoutFeedback>
-                {/* Botón de ingresar por huella */}
-                <Layout style={{ marginTop: 10 }}>
-                    <Button
-                        appearance="outline"
-                        accessoryLeft={<MyIcon name="smiling-face-outline" />}
-                        onPress={() => { }}
-                    >Ingresar por huella</Button>
+
+                {/* Separador visual */}
+                <Layout style={{ marginVertical: 20, alignItems: 'center' }}>
+                    <Text category="c1" appearance="hint">o ingresa con</Text>
                 </Layout>
-                {/* Botón de ingresar por FaceID */}
-                <Layout style={{ marginTop: 10 }}>
-                    <Button
-                        appearance="outline"
-                        accessoryLeft={<MyIcon name="smiling-face-outline" />}
-                        onPress={() => { }}
-                    >Ingresar por FaceID</Button>
+
+                {/* Botones de autenticación biométrica */}
+                <Layout style={{ flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: 10 }}>
+                    {/* Botón de ingresar por huella */}
+                    <Layout style={{ flex: 1, marginRight: 5 }}>
+                        <Button
+                            appearance="outline"
+                            status="info"
+                            accessoryLeft={<MyIcon name="hash-outline" />}
+                            onPress={() => { }}
+                            style={{
+                                borderRadius: 12,
+                                paddingVertical: 12
+                            }}
+                        >Huella</Button>
+                    </Layout>
+
+                    {/* Botón de ingresar por FaceID */}
+                    <Layout style={{ flex: 1, marginLeft: 5 }}>
+                        <Button
+                            appearance="outline"
+                            status="info"
+                            accessoryLeft={<MyIcon name="eye-outline" />}
+                            onPress={() => { }}
+                            style={{
+                                borderRadius: 12,
+                                paddingVertical: 12
+                            }}
+                        >Face ID</Button>
+                    </Layout>
                 </Layout>
                 {/* Space */}
                 <Layout style={{ height: 20 }} />
