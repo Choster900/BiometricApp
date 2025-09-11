@@ -1,5 +1,4 @@
 
-import { Text, View } from 'react-native';
 import { createStackNavigator, StackCardStyleInterpolator } from '@react-navigation/stack';
 import { LoadingScreen } from '../screens/loading/LoadingScree';
 import { HomeScreen } from '../screens/home/HomeScreen';
