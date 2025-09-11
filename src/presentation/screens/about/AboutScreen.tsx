@@ -29,48 +29,47 @@ export const AboutScreen = () => {
             <View style={styles.content}>
                 <Card style={styles.card}>
                     <View style={styles.appHeader}>
-                        <View style={styles.appInfo}>
+                        <View style={styles.appIcon}>
+                            <Icon name='smartphone-outline' fill='#3366FF' style={styles.largeIcon} />
+                        </View>
+                        <View style={styles.appDetails}>
                             <Text category='h5'>BiometricApp</Text>
                             <Text category='s1' appearance='hint'>Version 1.0.0</Text>
+                            <Text category='c1' appearance='hint'>Secure mobile app</Text>
                         </View>
                     </View>
-
-                    <Text category='p1' style={styles.description}>
-                        A secure mobile application with biometric authentication and modern UI.
-                    </Text>
                 </Card>
 
                 <Card style={styles.card}>
-                    <Text category='h6' style={styles.cardTitle}>Technologies</Text>
-                    <Text category='s1'>• React Native</Text>
-                    <Text category='s1'>• UI Kitten</Text>
-                    <Text category='s1'>• TypeScript</Text>
+                    <Text category='h6' style={styles.cardTitle}>Features</Text>
                     <Text category='s1'>• Biometric Authentication</Text>
+                    <Text category='s1'>• Secure Data Storage</Text>
+                    <Text category='s1'>• Real-time Analytics</Text>
+                    <Text category='s1'>• Cross-platform Support</Text>
                 </Card>
 
                 <Card style={styles.card}>
-                    <Text category='h6' style={styles.cardTitle}>Contact & Support</Text>
-                    <Button
-                        style={styles.linkButton}
-                        appearance='ghost'
-                        status='basic'
+                    <Text category='h6' style={styles.cardTitle}>Built With</Text>
+                    <Text category='s1'>React Native & TypeScript</Text>
+                    <Text category='s1'>UI Kitten Design System</Text>
+                    <Text category='s1'>Zustand State Management</Text>
+                </Card>
 
-                    >
-                        Contact Support
-                    </Button>
+                <Card style={styles.card}>
+                    <Text category='h6' style={styles.cardTitle}>Support</Text>
                     <Button
-                        style={styles.linkButton}
-                        appearance='ghost'
-                        status='basic'
-
+                        style={styles.supportButton}
+                        appearance='outline'
+                        size='small'
+                        accessoryLeft={(props) => <Icon {...props} name='question-mark-circle-outline' />}
                     >
-                        Visit Website
+                        Help & Support
                     </Button>
                 </Card>
 
-                <View style={styles.footer}>
-                    <Text category='c1' appearance='hint'>© 2024 BiometricApp</Text>
-                    <Text category='c1' appearance='hint'>All rights reserved</Text>
+                <View style={styles.copyright}>
+                    <Icon name='heart-outline' fill='#FF3D71' style={styles.heartIcon} />
+                    <Text category='c1' appearance='hint'>Made with love</Text>
                 </View>
             </View>
         </Layout>
@@ -88,31 +87,41 @@ const styles = StyleSheet.create({
     card: {
         marginBottom: 16,
     },
-    appHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    appIcon: {
-        width: 32,
-        height: 32,
-        marginRight: 12,
-    },
-    appInfo: {
-        flex: 1,
-    },
-    description: {
-        marginTop: 8,
-    },
     cardTitle: {
         marginBottom: 12,
     },
-    linkButton: {
-        justifyContent: 'flex-start',
-        marginBottom: 4,
-    },
-    footer: {
+    appHeader: {
+        flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 24,
+    },
+    appIcon: {
+        width: 50,
+        height: 50,
+        backgroundColor: '#F7F9FC',
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+    },
+    largeIcon: {
+        width: 28,
+        height: 28,
+    },
+    appDetails: {
+        flex: 1,
+    },
+    supportButton: {
+        alignSelf: 'flex-start',
+    },
+    copyright: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 20,
+    },
+    heartIcon: {
+        width: 16,
+        height: 16,
+        marginRight: 6,
     },
 });
