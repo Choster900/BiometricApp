@@ -6,5 +6,12 @@ export interface User {
     roles: string[];
     biometricEnabled: boolean;
     deviceToken: null | string;
+    allDeviceSessions: DeviceSession[];
     allowMultipleSessions: boolean;
+}
+
+interface DeviceSession {
+    deviceToken: string;
+    isActive: boolean;
+    sessionId: string;
 }

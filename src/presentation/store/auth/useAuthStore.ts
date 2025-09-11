@@ -38,15 +38,77 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
         if (!resp) {
             set({ status: 'unauthenticated', token: undefined, user: undefined });
-
             return false;
         }
 
-
         await StorageAdapter.setItem('token', resp.token);
 
+        let deviceTokenValue = null;
 
-        set({ status: 'authenticated', token: resp.token, user: resp.user });
+        try {
+            const existingCredentials = await Keychain.getGenericPassword();
+            if (existingCredentials && existingCredentials.password) {
+                const storedDeviceToken = existingCredentials.password;
+
+                // 🔹 Validar si el device token stored está en la lista de activos
+                const isTokenActive = resp.user.allDeviceSessions?.some(
+                    (session: any) => session.deviceToken === storedDeviceToken && session.isActive
+                );
+
+                if (isTokenActive) {
+                    deviceTokenValue = storedDeviceToken;
+                    console.log('✅ Using existing ACTIVE device token from secure storage');
+                } else {
+                    console.log('⚠️ Stored device token is inactive or not found');
+                    set({ status: 'unauthenticated', token: undefined, user: undefined });
+                    return false;
+
+                }
+            }
+        } catch (error) {
+            console.log('❌ Error checking existing device token:', error);
+        }
+
+
+        if (!deviceTokenValue) {
+            const generated = await generateDeviceToken();
+            if (!generated) {
+                console.log('❌ Failed to generate device token');
+                // Continuar sin device token por ahora
+                set({ status: 'authenticated', token: resp.token, user: resp.user });
+                return true;
+            }
+
+            deviceTokenValue = generated.deviceToken;
+
+            try {
+                await Keychain.setGenericPassword(
+                    'device',
+                    deviceTokenValue,
+                    {
+                        accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED
+                    }
+                );
+                console.log('✅ Device token saved to Keychain');
+            } catch (error) {
+                console.error('❌ Error saving device token to Keychain:', error);
+            }
+
+            try {
+                await saveDeviceToken(deviceTokenValue);
+            } catch (error) {
+                console.error('❌ Error saving device token to backend:', error);
+            }
+        }
+
+        set({
+            status: 'authenticated',
+            token: resp.token,
+            user: {
+                ...resp.user,
+                deviceToken: deviceTokenValue
+            }
+        });
 
         return true;
 
@@ -55,13 +117,32 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     loginWithBiometrics: async () => {
         try {
             const credentials = await Keychain.getGenericPassword();
-            if (!credentials) return false;
+            if (!credentials) {
+                console.log('❌ No credentials found in Keychain');
+                return false;
+            }
 
             const deviceToken = credentials.password;
-            console.log(deviceToken)
+            console.log('🔐 Attempting biometric login with device token:', deviceToken);
 
             const resp = await authLoginWithDeviceToken(deviceToken);
-            if (!resp) return false;
+            if (!resp) {
+                console.log('❌ Biometric login failed - token may be invalid');
+                return false;
+            }
+
+            // 🔹 Validar si el device token usado sigue siendo activo después del login
+            const isTokenStillActive = resp.user.allDeviceSessions?.some(
+                (session: any) => session.deviceToken === deviceToken && session.isActive
+            );
+
+            if (!isTokenStillActive) {
+                console.log('⚠️ Device token is no longer active, clearing from Keychain');
+                await Keychain.resetGenericPassword();
+                // Aún permitir el login ya que fue exitoso, pero limpiar el token inactivo
+            } else {
+                console.log('✅ Device token is still active');
+            }
 
             await StorageAdapter.setItem('token', resp.token);
 
@@ -69,7 +150,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
             return true;
 
         } catch (e) {
-            console.log("Biometric login failed:", e);
+            console.log('❌ Biometric login failed:', e);
             return false;
         }
     },
