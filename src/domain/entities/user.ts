@@ -6,4 +6,5 @@ export interface User {
     roles: string[];
     biometricEnabled: boolean;
     deviceToken: null | string;
+    allowMultipleSessions: boolean;
 }

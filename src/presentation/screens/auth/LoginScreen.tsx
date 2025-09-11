@@ -22,11 +22,13 @@ export const LoginScreen = ({ navigation }: Props) => {
     // Verificar si existen credenciales biométricas al cargar el componente
     useEffect(() => {
         const checkBiometricSupportAndCredentials = async () => {
-            const biometryType = await Keychain.getSupportedBiometryType();
-            console.log('Supported Biometry Type:', biometryType);
+           // const biometryType = await Keychain.getSupportedBiometryType();
+           // console.log('Supported Biometry Type:', biometryType);
 
             try {
                 const credentials = await Keychain.hasGenericPassword();
+
+                console.log(credentials)
                 setHasBiometricCredentials(credentials);
             } catch (error) {
                 console.log('Error checking biometric credentials:', error);

@@ -1,9 +1,10 @@
 import { create } from "zustand";
 import { User } from "../../../domain/entities/user";
 import { AuthStatus } from "../../../infrastructure/interfaces/auth.status";
-import { authLogin, authValidateToken, authLoginWithDeviceToken, authEnableBiometrics } from "../../../actions/auth/auth";
+import { authLogin, authValidateToken, authLoginWithDeviceToken } from "../../../actions/auth/auth";
 import { StorageAdapter } from "../../../config/adapters/async-storage";
 import * as Keychain from 'react-native-keychain';
+import { allowMultipleSessionsOptions, disableBiometrics, generateDeviceToken, saveDeviceToken } from '../../../actions/security/security';
 
 
 
@@ -18,6 +19,10 @@ export interface AuthState {
     enableBiometrics: () => Promise<void>;
     checkStatus: () => Promise<boolean>;
     logout: () => void;
+
+    // Security
+    allowMultipleSessionsOptions: (allow: boolean) => Promise<void>;
+    disableBiometrics: () => Promise<boolean>; // Cambiado a boolean para indicar éxito/fallo
 }
 
 
@@ -73,7 +78,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         const { user } = get();
         if (!user) return;
 
-        const resp = await authEnableBiometrics();
+        const resp = await generateDeviceToken();
         if (!resp) return;
 
         const { deviceToken } = resp;
@@ -87,13 +92,13 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
                 accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED
             }
         );
-        console.log(resp)
+
+        await saveDeviceToken(deviceToken);
 
         set({ user: { ...user, biometricEnabled: true } });
     },
 
     checkStatus: async () => {
-
 
         const resp = await authValidateToken();
 
@@ -104,6 +109,10 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
         await StorageAdapter.setItem('token', resp.token);
 
+        // Debug: verificar si allowMultipleSessions está presente
+        console.log('🔍 User data from checkStatus:', resp.user);
+        console.log('🔍 allowMultipleSessions value:', resp.user.allowMultipleSessions);
+
         set({ status: 'authenticated', token: resp.token, user: resp.user });
 
         return true;
@@ -113,6 +122,61 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     logout: async () => {
         await StorageAdapter.removeItem('token');
         set({ status: 'unauthenticated', token: undefined, user: undefined });
+    },
+
+    allowMultipleSessionsOptions: async (allow: boolean) => {
+
+        const { user } = get();
+        if (!user) return;
+
+        await allowMultipleSessionsOptions(allow);
+
+        set({ user: { ...user, allowMultipleSessions: allow } });
+
+    },
+
+    disableBiometrics: async () => {
+        const { user } = get();
+        if (!user) return false;
+
+        try {
+            const credentials = await Keychain.getGenericPassword({
+                authenticationPrompt: {
+                    title: 'Verificación de Seguridad',
+                    subtitle: 'Verifica tu identidad para deshabilitar la autenticación biométrica',
+                    description: 'Usa tu huella dactilar o Face ID para confirmar esta acción',
+                    cancel: 'Cancelar',
+                },
+            });
+
+            if (!credentials) {
+                console.log('❌ Verificación biométrica cancelada o fallida');
+                return false;
+            }
+
+
+            const success = await disableBiometrics();
+            if (success) {
+                set({ user: { ...user, biometricEnabled: false, deviceToken: null } });
+
+                // Limpiar las credenciales almacenadas
+                await Keychain.resetGenericPassword();
+                return true;
+            } else {
+                return false;
+            }
+
+        } catch (error: any) {
+            console.error('❌ Error durante la verificación/deshabilitación biométrica:', error);
+
+            // Si el error es por cancelación del usuario, retornar false sin loggear como error
+            if (error?.message?.includes('cancelled') || error?.message?.includes('UserCancel')) {
+                console.log('❌ Usuario canceló la verificación biométrica');
+                return false;
+            }
+
+            return false;
+        }
     }
 
 }))

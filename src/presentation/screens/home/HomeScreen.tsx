@@ -1,15 +1,20 @@
-import { Layout, Text, Icon, Button } from "@ui-kitten/components"
+import { Layout, Text, Icon, Button, TopNavigationAction, TopNavigation } from "@ui-kitten/components"
 import { Alert, StyleSheet, TouchableWithoutFeedback } from "react-native";
 import { useAuthStore } from "../../store/auth/useAuthStore";
 import { MyIcon } from "../../components/ui/MyIcon";
-import { authEnableBiometrics } from "../../../actions/auth/auth";
 import { useState, useEffect } from "react";
 import * as Keychain from 'react-native-keychain';
+import { DrawerActions, useNavigation } from "@react-navigation/native";
+
+const MenuIcon = (props: any) => (
+    <Icon {...props} name='menu-outline' />
+);
 
 export const HomeScreen = () => {
 
     const { enableBiometrics, logout } = useAuthStore();
     const [hasBiometricCredentials, setHasBiometricCredentials] = useState(false);
+    const navigation = useNavigation();
 
     // Verificar si existen credenciales biométricas al cargar
     useEffect(() => {
@@ -79,8 +84,22 @@ export const HomeScreen = () => {
         }
     }
 
+    const renderMenuAction = () => (
+        <TopNavigationAction
+            icon={MenuIcon}
+            onPress={() => {
+                navigation.dispatch(DrawerActions.openDrawer());
+            }}
+        />
+    );
     return (
         <Layout style={styles.container}>
+
+            <TopNavigation
+                title='Home'
+                alignment='center'
+                accessoryLeft={renderMenuAction}
+            />
             {/* Header Section */}
             <Layout style={styles.headerSection}>
                 <Layout style={styles.avatarContainer}>
@@ -125,7 +144,7 @@ export const HomeScreen = () => {
                                 </Text>
                             </Layout>
                         </Layout>
-                        { <MyIcon
+                        {<MyIcon
                             name="settings-outline"
 
                         />}
@@ -154,9 +173,9 @@ export const HomeScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fafafa',
-        paddingHorizontal: 24,
-        paddingTop: 60,
+       // backgroundColor: '#fafafa',
+        /* paddingHorizontal: 24,
+        paddingTop: 60, */
     },
     headerSection: {
         alignItems: 'center',
@@ -189,6 +208,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff',
         borderRadius: 16,
         padding: 20,
+        marginHorizontal: 24,
         marginBottom: 32,
         elevation: 0,
         shadowOpacity: 0,

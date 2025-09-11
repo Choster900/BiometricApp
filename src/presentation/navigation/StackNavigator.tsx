@@ -1,13 +1,13 @@
 
 import { createStackNavigator, StackCardStyleInterpolator } from '@react-navigation/stack';
 import { LoadingScreen } from '../screens/loading/LoadingScree';
-import { HomeScreen } from '../screens/home/HomeScreen';
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { RegisterScreen } from '../screens/auth/RegisterScreen';
+import { DrawerNavigator } from './DrawerNavigator';
 
 
 export type RootStackParamList = {
-    HomeScreen: undefined;
+    DrawerNavigator: undefined;
     LoginScreen: undefined;
     RegisterScreen: undefined;
     LoadingScreen: undefined;
@@ -31,7 +31,7 @@ export const StackNavigator = () => {
             }}>
 
             <Stack.Screen name="LoadingScreen" component={LoadingScreen} />
-            <Stack.Screen name="HomeScreen" component={HomeScreen} />
+            <Stack.Screen name="DrawerNavigator" component={DrawerNavigator} />
             <Stack.Screen name="LoginScreen" component={LoginScreen} />
             <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
         </Stack.Navigator>

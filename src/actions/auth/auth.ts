@@ -11,8 +11,9 @@ const returnUserToken = (data: LoginResponse) => {
         fullName: data.fullName,
         isActive: data.isActive,
         roles: data.roles,
-        biometricEnabled: data.biometricEnabled,
+        biometricEnabled: data.biometricEnabled ?? false,
         deviceToken: data.deviceToken,
+        allowMultipleSessions: data.allowMultipleSessions ?? false, // Valor por defecto
     }
 
     return { user, token: data.token };
@@ -65,7 +66,9 @@ export const authValidateToken = async (): Promise<{ user: User, token: string }
         console.error('Token validation error:', message, error);
         return null;
     }
-};// 🔹 nuevo: login usando el deviceToken
+};
+
+// 🔹 nuevo: login usando el deviceToken
 export const authLoginWithDeviceToken = async (deviceToken: string): Promise<{ user: User, token: string } | null> => {
     try {
         const { data } = await ditoApi.post<LoginResponse>('/auth/login-with-device-token', { deviceToken });
@@ -78,23 +81,6 @@ export const authLoginWithDeviceToken = async (deviceToken: string): Promise<{ u
             message = error.message;
         }
         console.error('Biometric login error:', message, error);
-        return null;
-    }
-};
-
-// 🔹 nuevo: habilitar biometría
-export const authEnableBiometrics = async (): Promise<{ deviceToken: string } | null> => {
-    try {
-        const { data } = await ditoApi.post<{ deviceToken: string }>('/auth/enable-biometrics');
-        return data;
-    } catch (error: any) {
-        let message = 'Error habilitando biometría.';
-        if (error.response?.data?.message) {
-            message = error.response.data.message;
-        } else if (error.message) {
-            message = error.message;
-        }
-        console.error('Enable biometrics error:', message, error);
         return null;
     }
 };
