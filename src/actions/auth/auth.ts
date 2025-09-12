@@ -13,8 +13,8 @@ const returnUserToken = (data: LoginResponse) => {
         fullName: data.fullName,
         isActive: data.isActive,
         roles: data.roles,
-        biometricEnabled: data.biometricEnabled ?? false,
-        deviceToken: data.activeDeviceTokens[0] ?? null,
+        //biometricEnabled: data.deviceTokens[0]?.biometricEnabled ?? false,
+        //deviceToken: data.activeDeviceTokens[0] ?? null,
         allDeviceSessions: data.deviceTokens ?? [],
         allowMultipleSessions: data.allowMultipleSessions ?? false, // Valor por defecto
     }

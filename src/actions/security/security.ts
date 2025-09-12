@@ -43,9 +43,9 @@ export const saveDeviceToken = async (deviceToken: string): Promise<boolean> => 
     }
 };
 
-export const allowMultipleSessionsOptions = async (allow: boolean): Promise<string | null> => {
+export const allowMultipleSessionsOptions = async (allow: boolean, currentDeviceToken: string): Promise<string | null> => {
     try {
-        const { data } = await ditoApi.post<string>('/auth/allow-multiple-sessions', { allow });
+        const { data } = await ditoApi.post<string>('/auth/allow-multiple-sessions', { allow, currentDeviceToken });
         console.log('Multiple sessions updated:', data);
         return data;
     } catch (error: any) {
@@ -60,7 +60,22 @@ export const allowMultipleSessionsOptions = async (allow: boolean): Promise<stri
     }
 };
 
-
+export const enableBiometrics = async (deviceToken: string): Promise<boolean> => {
+    try {
+        await ditoApi.post('/auth/enable-biometrics', { deviceToken });
+        console.log('Biometrics enabled successfully');
+        return true;
+    } catch (error: any) {
+        let message = 'Error habilitando biometría.';
+        if (error.response?.data?.message) {
+            message = error.response.data.message;
+        } else if (error.message) {
+            message = error.message;
+        }
+        console.error('Enable biometrics error:', message, error);
+        return false;
+    }
+};
 
 export const disableBiometrics = async (): Promise<boolean> => {
     try {

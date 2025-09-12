@@ -26,7 +26,7 @@ export const LoginScreen = ({ navigation }: Props) => {
            // console.log('Supported Biometry Type:', biometryType);
 
             try {
-                const credentials = await Keychain.hasGenericPassword();
+                const credentials = await Keychain.hasGenericPassword({ service: 'biometric-enabled' });
 
                 console.log(credentials)
                 setHasBiometricCredentials(credentials);

@@ -4,15 +4,16 @@ export interface LoginResponse {
     fullName:              string;
     isActive:              boolean;
     roles:                 string[];
-    biometricEnabled:      boolean;
     allowMultipleSessions: boolean;
+    biometricEnabled:      boolean;
     activeDeviceTokens:    string[];
     deviceTokens:          DeviceToken[];
     token:                 string;
 }
 
 export interface DeviceToken {
-    deviceToken: string;
-    isActive:    boolean;
-    sessionId:   string;
+    deviceToken:      string;
+    isActive:         boolean;
+    sessionId:        string;
+    biometricEnabled: boolean;
 }

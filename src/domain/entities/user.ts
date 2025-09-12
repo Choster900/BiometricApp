@@ -4,8 +4,8 @@ export interface User {
     fullName: string;
     isActive: boolean;
     roles: string[];
-    biometricEnabled: boolean;
-    deviceToken: null | string;
+    //biometricEnabled: boolean;
+    //deviceToken: null | string;
     allDeviceSessions: DeviceSession[];
     allowMultipleSessions: boolean;
 }
@@ -14,4 +14,5 @@ interface DeviceSession {
     deviceToken: string;
     isActive: boolean;
     sessionId: string;
+    biometricEnabled: boolean;
 }

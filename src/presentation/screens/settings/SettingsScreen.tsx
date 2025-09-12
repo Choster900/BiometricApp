@@ -10,11 +10,11 @@ const MenuIcon = (props: any) => (
 );
 
 export const SettingsScreen = () => {
-    const { user, enableBiometrics, disableBiometrics, allowMultipleSessionsOptions } = useAuthStore();
+    const { user, biometricEnabled, enableBiometrics, disableBiometrics, allowMultipleSessionsOptions } = useAuthStore();
     const navigation = useNavigation();
 
 
-    const [biometricEnabled, setBiometricEnabled] = useState(user?.biometricEnabled || false);
+    const [localBiometricEnabled, setLocalBiometricEnabled] = useState(biometricEnabled || false);
 
     const [allowMultipleSessions, setAllowMultipleSessions] = useState(user?.allowMultipleSessions || false);
 
@@ -27,13 +27,13 @@ export const SettingsScreen = () => {
     );
 
     const handleBiometricToggle = async (isChecked: boolean) => {
-        if (isChecked && !user?.biometricEnabled) {
+        if (isChecked && !localBiometricEnabled) {
             await enableBiometrics();
-            setBiometricEnabled(true);
+            setLocalBiometricEnabled(true);
         } else {
             console.log(isChecked)
             await disableBiometrics();
-            setBiometricEnabled(isChecked);
+            setLocalBiometricEnabled(isChecked);
         }
     };
 
@@ -71,7 +71,7 @@ export const SettingsScreen = () => {
                             </View>
                         </View>
                         <Toggle
-                            checked={biometricEnabled}
+                            checked={localBiometricEnabled}
                             onChange={handleBiometricToggle}
                         />
                     </View>
