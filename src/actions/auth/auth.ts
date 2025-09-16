@@ -45,9 +45,13 @@ export const authLogin = async (email: string, password: string, deviceToken: st
     }
 };
 
-export const authValidateToken = async (): Promise<{ user: User, token: string } | null> => {
+export const authValidateToken = async (deviceToken: string): Promise<{ user: User, token: string } | null> => {
     try {
-        const { data } = await ditoApi.get<LoginResponse>('/auth/check-status');
+        let url = '/auth/check-status';
+        if (deviceToken) {
+            url += `?deviceToken=${encodeURIComponent(deviceToken)}`;
+        }
+        const { data } = await ditoApi.get<LoginResponse>(url);
         return returnUserToken(data);
     } catch (error: any) {
         // Si es error de autenticación (400, 401, 403), no mostrar error
