@@ -4,16 +4,15 @@ export interface LoginResponse {
     fullName:              string;
     isActive:              boolean;
     roles:                 string[];
+    foundDeviceToken:      FoundDeviceToken;
     allowMultipleSessions: boolean;
-    biometricEnabled:      boolean;
-    activeDeviceTokens:    string[];
-    deviceTokens:          DeviceToken[];
     token:                 string;
 }
 
-export interface DeviceToken {
+export interface FoundDeviceToken {
     deviceToken:      string;
     isActive:         boolean;
     sessionId:        string;
     biometricEnabled: boolean;
+    message:          string;
 }

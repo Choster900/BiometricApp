@@ -77,9 +77,9 @@ export const enableBiometrics = async (deviceToken: string): Promise<boolean> =>
     }
 };
 
-export const disableBiometrics = async (): Promise<boolean> => {
+export const disableBiometrics = async (deviceToken: string): Promise<boolean> => {
     try {
-        await ditoApi.post('/auth/disable-biometrics');
+        await ditoApi.post('/auth/disable-biometrics', { deviceToken });
         console.log('Biometrics disabled successfully');
         return true;
     } catch (error: any) {

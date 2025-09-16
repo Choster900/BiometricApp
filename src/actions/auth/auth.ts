@@ -13,21 +13,18 @@ const returnUserToken = (data: LoginResponse) => {
         fullName: data.fullName,
         isActive: data.isActive,
         roles: data.roles,
-        //biometricEnabled: data.deviceTokens[0]?.biometricEnabled ?? false,
-        //deviceToken: data.activeDeviceTokens[0] ?? null,
-        allDeviceSessions: data.deviceTokens ?? [],
-        allowMultipleSessions: data.allowMultipleSessions ?? false, // Valor por defecto
+        allowMultipleSessions: data.allowMultipleSessions,
+        foundDeviceToken: data.foundDeviceToken ?? null,
     }
 
     return { user, token: data.token };
-
 }
 
 
-export const authLogin = async (email: string, password: string) => {
+export const authLogin = async (email: string, password: string, deviceToken: string) => {
     email = email.toLowerCase().trim();
     try {
-        const { data } = await ditoApi.post<LoginResponse>('/auth/login', { email, password });
+        const { data } = await ditoApi.post<LoginResponse>('/auth/login', { email, password, deviceToken });
         const result = returnUserToken(data);
 
         return result;

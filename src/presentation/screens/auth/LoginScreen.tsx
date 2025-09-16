@@ -28,7 +28,7 @@ export const LoginScreen = ({ navigation }: Props) => {
             try {
                 const credentials = await Keychain.hasGenericPassword({ service: 'biometric-enabled' });
 
-                console.log(credentials)
+                //console.log(credentials)
                 setHasBiometricCredentials(credentials);
             } catch (error) {
                 console.log('Error checking biometric credentials:', error);
@@ -42,7 +42,7 @@ export const LoginScreen = ({ navigation }: Props) => {
     const onLogin = async () => {
         const result = await login(form.email, form.password);
 
-        console.log(result)
+        //console.log(result)
         if (result) {
             return;
         }

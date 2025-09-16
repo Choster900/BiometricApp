@@ -25,17 +25,20 @@ export const SettingsScreen = () => {
             onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
         />
     );
-
     const handleBiometricToggle = async (isChecked: boolean) => {
         if (isChecked && !localBiometricEnabled) {
-            await enableBiometrics();
-            setLocalBiometricEnabled(true);
-        } else {
-            console.log(isChecked)
-            await disableBiometrics();
-            setLocalBiometricEnabled(isChecked);
+            const result = await enableBiometrics(); // 🔹 Retorna true si se completó
+            if (result) {
+                setLocalBiometricEnabled(true);
+            }
+        } else if (!isChecked && localBiometricEnabled) {
+            const result = await disableBiometrics(); // 🔹 Retorna true si se completó
+            if (result) {
+                setLocalBiometricEnabled(false);
+            }
         }
     };
+
 
     const handleMultipleSessionsToggle = (isChecked: boolean) => {
         setAllowMultipleSessions(isChecked);
