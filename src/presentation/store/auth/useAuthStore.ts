@@ -4,7 +4,7 @@ import { AuthStatus } from "../../../infrastructure/interfaces/auth.status";
 import { authLogin, authValidateToken, authLoginWithDeviceToken } from "../../../actions/auth/auth";
 import { StorageAdapter } from "../../../config/adapters/async-storage";
 import * as Keychain from 'react-native-keychain';
-import { allowMultipleSessionsOptions, disableBiometrics, generateDeviceToken, saveDeviceToken, enableBiometrics } from '../../../actions/security/security';
+import { allowMultipleSessionsOptions, disableBiometrics, generateDeviceToken, saveDeviceToken, enableBiometrics, checkMainDevice } from '../../../actions/security/security';
 
 // Constantes para identificar específicamente cada tipo de clave en el Keychain
 const KEYCHAIN_SERVICES = {
@@ -313,10 +313,10 @@ export interface AuthState {
     loginWithBiometrics: () => Promise<boolean>;
     enableBiometrics: () => Promise<boolean>;
     checkStatus: () => Promise<boolean>;
-    
+
     // Método para marcar sesión como expirada sin cambiar estado automáticamente
     markSessionExpired: () => void;
-    
+
     logout: () => void;
 
     // Método para extender sesión usando device token
@@ -351,9 +351,11 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
     login: async (email: string, password: string) => {
         try {
+
             // Obtener device token guardado en el dispositivo
             const existingDeviceToken = await KeychainManager.getDeviceToken();
             console.log('🔍 Device token from device:', existingDeviceToken ? 'Found' : 'Not found');
+
 
             // Intentar login con el device token si existe, sino enviar string vacío
             const resp = await authLogin(email, password, existingDeviceToken || '');
@@ -364,6 +366,10 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
             }
 
             await StorageAdapter.setItem('token', resp.token);
+
+            const check = await checkMainDevice(existingDeviceToken || '');
+            console.log('🔍 Main device check:', check?.isMainDevice ? 'Is main device' : 'Not main device');
+
 
             let finalDeviceToken = existingDeviceToken;
             let finalBiometricEnabled = false;
@@ -504,7 +510,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
             // Crear una credencial temporal para verificación biométrica
             const biometricServiceName = 'biometric-login-verification';
-            
+
             try {
                 // Establecer credencial temporal con biometría
                 await Keychain.setInternetCredentials(
@@ -537,13 +543,13 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
             } catch (biometricError: any) {
 
-                if (biometricError?.message?.includes('cancelled') || 
+                if (biometricError?.message?.includes('cancelled') ||
                     biometricError?.message?.includes('UserCancel') ||
                     biometricError?.message?.includes('Authentication was canceled by the user')) {
                     console.log('❌ User cancelled biometric verification');
                     return false;
                 }
-                
+
                 console.log('❌ Biometric verification failed:', biometricError);
                 return false;
             }
@@ -572,7 +578,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
             return true;
 
         } catch (biometricError: any) {
-            if (biometricError?.message?.includes('cancelled') || 
+            if (biometricError?.message?.includes('cancelled') ||
                 biometricError?.message?.includes('UserCancel') ||
                 biometricError?.message?.includes('Authentication was canceled by the user')) {
                 console.log('❌ User cancelled biometric verification');
@@ -593,7 +599,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         if (!resp) {
             // ✅ Distinguir entre "no hay token" vs "token expirado"
             const storedToken = await StorageAdapter.getItem('token');
-            
+
             if (storedToken) {
                 // Hay token almacenado pero es inválido/expirado
                 console.log('⚠️ Token validation failed - setting status to expired');
@@ -641,20 +647,20 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     extendSession: async () => {
         try {
             console.log('🔄 Attempting to extend session using device token...');
-            
+
             // Obtener device token desde Keychain
             const deviceToken = await KeychainManager.getDeviceToken();
-            
+
             if (!deviceToken) {
                 console.log('❌ No device token found, cannot extend session');
                 return false;
             }
 
             console.log('🔐 Using device token to extend session');
-            
+
             // Usar el método existente de login con device token
             const resp = await authLoginWithDeviceToken(deviceToken);
-            
+
             if (!resp) {
                 console.log('❌ Failed to extend session - device token may be invalid');
                 return false;

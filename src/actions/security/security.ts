@@ -1,4 +1,5 @@
 import { ditoApi } from "../../config/ditoApi";
+import { CheckMainDeviceResponse } from "../../infrastructure/interfaces/check-main-device.response";
 
 interface GenerateDeviceTokenResponse {
     deviceToken: string;
@@ -96,5 +97,22 @@ export const disableBiometrics = async (deviceToken: string): Promise<boolean> =
         }
         console.error('Disable biometrics error:', message, error);
         return false;
+    }
+};
+
+
+export const checkMainDevice = async (deviceToken: string): Promise<CheckMainDeviceResponse | null> => {
+    try {
+        const { data } = await ditoApi.post('/auth/check-main-device', { deviceToken });
+        return data;
+    } catch (error: any) {
+        let message = 'Error verificando dispositivo principal.';
+        if (error.response?.data?.message) {
+            message = error.response.data.message;
+        } else if (error.message) {
+            message = error.message;
+        }
+        console.error('Check main device error:', message, error);
+        return null;
     }
 };
