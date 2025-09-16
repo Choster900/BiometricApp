@@ -486,6 +486,15 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
                 return false;
             }
 
+            await Keychain.setGenericPassword(
+                'device',
+                deviceToken,
+                {
+                    accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
+                    accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED,
+                }
+            );
+
             console.log('🔐 Attempting biometric login with device token:', deviceToken);
 
             const resp = await authLoginWithDeviceToken(deviceToken);
@@ -522,8 +531,12 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
             });
             return true;
 
-        } catch (e) {
-            console.log('❌ Biometric login failed:', e);
+        } catch (biometricError: any) {
+            if (biometricError?.message?.includes('cancelled') || biometricError?.message?.includes('UserCancel')) {
+                console.log('❌ User cancelled biometric verification');
+                return false;
+            }
+            console.log('❌ Biometric login failed:', biometricError);
             return false;
         }
     },

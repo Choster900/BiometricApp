@@ -79,19 +79,6 @@ export const SettingsScreen = () => {
                         />
                     </View>
 
-                    <View style={styles.settingItem}>
-                        <View style={styles.settingLeft}>
-
-                            <View>
-                                <Text category='s1'>Allow multiple session</Text>
-                                <Text category='c1' appearance='hint'>Can have sessions on different devices</Text>
-                            </View>
-                        </View>
-                        <Toggle
-                            checked={allowMultipleSessions}
-                            onChange={handleMultipleSessionsToggle}
-                        />
-                    </View>
 
                 </Card>
 
