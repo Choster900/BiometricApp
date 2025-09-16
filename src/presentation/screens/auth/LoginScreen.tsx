@@ -12,32 +12,46 @@ interface Props extends StackScreenProps<RootStackParamList, 'LoginScreen'> { }
 
 export const LoginScreen = ({ navigation }: Props) => {
 
-    const { login, loginWithBiometrics } = useAuthStore();
+    const { login, loginWithBiometrics, getBiometricStatus, biometricEnabled } = useAuthStore();
 
     const [form, setForm] = useState({ email: '', password: '' });
     const [hasBiometricCredentials, setHasBiometricCredentials] = useState(false);
 
     const { height } = useWindowDimensions();
 
-    // Verificar si existen credenciales biométricas al cargar el componente
+    // Verificar el estado biométrico real desde el Keychain al cargar el componente
     useEffect(() => {
-        const checkBiometricSupportAndCredentials = async () => {
-           // const biometryType = await Keychain.getSupportedBiometryType();
-           // console.log('Supported Biometry Type:', biometryType);
-
+        const checkBiometricStatus = async () => {
             try {
-                const credentials = await Keychain.hasGenericPassword({ service: 'biometric-enabled' });
-
-                //console.log(credentials)
-                setHasBiometricCredentials(credentials);
+                // ✅ Usar el nuevo método que obtiene el estado real del Keychain
+                const isBiometricEnabled = await getBiometricStatus();
+                console.log('🔍 Biometric status from Keychain:', isBiometricEnabled);
+                
+                setHasBiometricCredentials(isBiometricEnabled);
             } catch (error) {
-                console.log('Error checking biometric credentials:', error);
+                console.log('❌ Error checking biometric status:', error);
                 setHasBiometricCredentials(false);
             }
         };
 
-        checkBiometricSupportAndCredentials();
-    }, []);
+        checkBiometricStatus();
+    }, [getBiometricStatus]);
+
+    // ✅ Escuchar cambios en el estado biométrico del store para actualizar UI automáticamente
+    useEffect(() => {
+        const checkAndUpdateBiometricStatus = async () => {
+            try {
+                const isBiometricEnabled = await getBiometricStatus();
+                console.log('🔄 Biometric status updated:', isBiometricEnabled);
+                setHasBiometricCredentials(isBiometricEnabled);
+            } catch (error) {
+                console.log('❌ Error updating biometric status:', error);
+                setHasBiometricCredentials(false);
+            }
+        };
+
+        checkAndUpdateBiometricStatus();
+    }, [biometricEnabled, getBiometricStatus]); // Se ejecuta cuando cambia biometricEnabled
 
     const onLogin = async () => {
         const result = await login(form.email, form.password);
