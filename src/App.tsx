@@ -11,6 +11,7 @@ import { useColorScheme } from 'react-native';
 import { AuthProvider } from './presentation/providers/AuthProvider';
 import { setNavigationRef } from './config/ditoApi';
 import { useRef } from 'react';
+import { useAuthStore } from './presentation/store/auth/useAuthStore';
 
 export const App = () => {
 
@@ -18,10 +19,46 @@ export const App = () => {
     
     // ✅ Crear referencia para la navegación
     const navigationRef = useRef<any>(null);
+    
+    // Referencias para controlar el debounce del check status
+    const lastCheckTime = useRef<number>(0);
+    const checkDebounceTimeout = useRef<number | null>(null);
+    const DEBOUNCE_DELAY = 2000; // 2 segundos de delay entre checks
 
     const theme = colorScheme === 'dark' ? eva.dark : eva.light;
 
     const backgroundColor = colorScheme === 'dark' ? theme['color-basic-800'] : theme['color-basic-100'];
+
+    // ✅ Función para manejar cambios de navegación
+    const handleNavigationStateChange = () => {
+        const currentTime = Date.now();
+        const timeSinceLastCheck = currentTime - lastCheckTime.current;
+
+        console.log(`🧭 Navigation state changed, time since last check: ${timeSinceLastCheck}ms`);
+
+        // Solo hacer check si ha pasado suficiente tiempo (debounce)
+        if (timeSinceLastCheck > DEBOUNCE_DELAY) {
+            console.log('🔄 Performing auth status check on navigation state change...');
+            
+            // Limpiar timeout anterior si existe
+            if (checkDebounceTimeout.current) {
+                clearTimeout(checkDebounceTimeout.current);
+            }
+
+            // Ejecutar check después de un pequeño delay para evitar múltiples calls
+            checkDebounceTimeout.current = setTimeout(() => {
+                // Obtener el store y hacer check
+                const authStore = useAuthStore.getState();
+                if (authStore.checkStatus) {
+                    authStore.checkStatus();
+                    lastCheckTime.current = Date.now();
+                }
+                checkDebounceTimeout.current = null;
+            }, 100);
+        } else {
+            console.log('⏱️ Skipping auth check due to debounce');
+        }
+    };
 
     return (
         <>
@@ -30,12 +67,16 @@ export const App = () => {
             <ApplicationProvider  {...eva} theme={theme}>
                 <NavigationContainer
                     ref={navigationRef}
+                    onStateChange={handleNavigationStateChange}
                     onReady={() => {
                         // ✅ Configurar la referencia para ditoApi cuando la navegación esté lista
                         console.log('🚀 Navigation ready, setting ref...');
                         console.log('🔍 Navigation ref current:', !!navigationRef.current);
                         setNavigationRef(navigationRef.current);
                         console.log('✅ Navigation ref configured for ditoApi');
+                        
+                        // Inicializar el timestamp del último check
+                        lastCheckTime.current = Date.now();
                     }}
                     theme={{
                         dark: colorScheme === 'dark',

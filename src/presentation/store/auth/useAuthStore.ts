@@ -313,7 +313,14 @@ export interface AuthState {
     loginWithBiometrics: () => Promise<boolean>;
     enableBiometrics: () => Promise<boolean>;
     checkStatus: () => Promise<boolean>;
+    
+    // Método para marcar sesión como expirada sin cambiar estado automáticamente
+    markSessionExpired: () => void;
+    
     logout: () => void;
+
+    // Método para extender sesión usando device token
+    extendSession: () => Promise<boolean>;
 
     // Método para obtener device token desde Keychain
     getDeviceToken: () => Promise<string | null>;
@@ -578,22 +585,32 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
 
     checkStatus: async () => {
-
+        const { status: currentStatus } = get();
         const deviceToken = await KeychainManager.getDeviceToken();
 
         const resp = await authValidateToken(deviceToken || '');
 
         if (!resp) {
-            set({ status: 'unauthenticated', token: undefined, user: undefined });
+            // ✅ Distinguir entre "no hay token" vs "token expirado"
+            const storedToken = await StorageAdapter.getItem('token');
+            
+            if (storedToken) {
+                // Hay token almacenado pero es inválido/expirado
+                console.log('⚠️ Token validation failed - setting status to expired');
+                set({ status: 'expired' });
+            } else {
+                // No hay token almacenado
+                console.log('⚠️ No stored token found - setting status to unauthenticated');
+                set({ status: 'unauthenticated' });
+            }
             return false;
         }
 
         await StorageAdapter.setItem('token', resp.token);
 
-
         set({
             status: 'authenticated',
-            //token: resp.token,
+            token: resp.token,
             biometricEnabled: resp.user.foundDeviceToken?.biometricEnabled || false,
             deviceToken: resp.user.foundDeviceToken?.deviceToken || null,
             user: resp.user
@@ -614,6 +631,57 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
             biometricEnabled: false,
             deviceToken: null
         });
+    },
+
+    markSessionExpired: () => {
+        console.log('⚠️ Marking session as expired - NOT auto-redirecting');
+        set({ status: 'expired' });
+    },
+
+    extendSession: async () => {
+        try {
+            console.log('🔄 Attempting to extend session using device token...');
+            
+            // Obtener device token desde Keychain
+            const deviceToken = await KeychainManager.getDeviceToken();
+            
+            if (!deviceToken) {
+                console.log('❌ No device token found, cannot extend session');
+                return false;
+            }
+
+            console.log('🔐 Using device token to extend session');
+            
+            // Usar el método existente de login con device token
+            const resp = await authLoginWithDeviceToken(deviceToken);
+            
+            if (!resp) {
+                console.log('❌ Failed to extend session - device token may be invalid');
+                return false;
+            }
+
+            console.log('✅ Session extended successfully');
+
+            // Guardar el nuevo JWT token
+            await StorageAdapter.setItem('token', resp.token);
+
+            const foundDeviceToken = resp.user.foundDeviceToken;
+
+            // Actualizar el estado con la nueva información
+            set({
+                status: 'authenticated',
+                token: resp.token,
+                biometricEnabled: foundDeviceToken?.biometricEnabled || false,
+                deviceToken: foundDeviceToken?.deviceToken || null,
+                user: resp.user
+            });
+
+            return true;
+
+        } catch (error: any) {
+            console.error('❌ Error extending session:', error);
+            return false;
+        }
     },
 
 

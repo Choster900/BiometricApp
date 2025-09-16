@@ -84,6 +84,11 @@ export const disableBiometrics = async (deviceToken: string): Promise<boolean> =
         return true;
     } catch (error: any) {
         let message = 'Error deshabilitando biometría.';
+
+        if (error.response?.status === 400 || error.response?.status === 401 || error.response?.status === 403) {
+            console.log('Login auth error (silent)');
+            return false;
+        }
         if (error.response?.data?.message) {
             message = error.response.data.message;
         } else if (error.message) {

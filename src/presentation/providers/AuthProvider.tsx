@@ -20,13 +20,15 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
         setAuthStore(authStore);
     }, [authStore]);
 
+    // ✅ Check status inicial
     useEffect(() => {
+        console.log('🔄 Initial auth status check...');
         checkStatus();
     }, []);
 
     useEffect(() => {
 
-        if ( status !== 'checking' ) {
+        if ( status !== 'checking' && status !== 'expired' ) {
 
             if ( status === 'authenticated' ) {
 

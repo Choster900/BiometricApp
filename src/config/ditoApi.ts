@@ -28,32 +28,36 @@ const setAuthStore = (store: any) => {
 };
 
 /**
- * Función para limpiar datos de usuario y redirigir al login
+ * Función para mostrar opciones cuando la sesión expira
+ * NO hace logout automático, solo presenta las opciones al usuario
  */
 const handleUnauthorized = async () => {
     try {
         console.log('🔍 Navigation ref available:', !!navigationRef);
         console.log('🔍 Auth store available:', !!authStore);
         
-        // ✅ Usar el logout del store si está disponible
-        if (authStore && authStore.logout) {
-            console.log('� Using auth store logout...');
-            await authStore.logout();
-        } else {
-            // Fallback: Limpiar AsyncStorage manualmente
-            console.log('� Fallback: Manual cleanup...');
-            await AsyncStorage.multiRemove(['token', 'userInfo']);
-        }
-        
-        // Mostrar alerta al usuario
+        // Solo mostrar alerta, SIN hacer logout automático
         Alert.alert(
             'Sesión Expirada',
-            'Tu sesión ha expirado. Por favor inicia sesión nuevamente.',
+            'Tu sesión ha expirado. ¿Qué deseas hacer?',
             [
                 {
-                    text: 'OK',
-                    onPress: () => {
-                        console.log('🚀 Attempting navigation...');
+                    text: 'Salir al Login',
+                    style: 'cancel',
+                    onPress: async () => {
+                        console.log('👤 User chose to go to login');
+                        
+                        // ✅ SOLO hacer logout si el usuario lo elige explícitamente
+                        if (authStore && authStore.logout) {
+                            console.log('🔧 Using auth store logout...');
+                            await authStore.logout();
+                        } else {
+                            // Fallback: Limpiar AsyncStorage manualmente
+                            console.log('🔧 Fallback: Manual cleanup...');
+                            await AsyncStorage.multiRemove(['token', 'userInfo']);
+                        }
+                        
+                        console.log('🚀 Attempting navigation to login...');
                         
                         // Intentar diferentes métodos de navegación
                         try {
@@ -82,8 +86,124 @@ const handleUnauthorized = async () => {
                             }
                         }
                     }
+                },
+                {
+                    text: 'Extender Sesión',
+                    onPress: async () => {
+                        console.log('� User chose to extend session');
+                        
+                        if (authStore && authStore.extendSession) {
+                            console.log('🔧 Attempting to extend session...');
+                            
+                            try {
+                                const success = await authStore.extendSession();
+                                
+                                if (success) {
+                                    console.log('✅ Session extended successfully - staying on current screen');
+                                    Alert.alert(
+                                        'Sesión Extendida',
+                                        'Tu sesión ha sido extendida exitosamente. Puedes continuar usando la aplicación.',
+                                        [{ text: 'OK' }]
+                                    );
+                                    // ✅ NO navegar - mantener en pantalla actual
+                                } else {
+                                    console.log('❌ Failed to extend session');
+                                    Alert.alert(
+                                        'Error',
+                                        'No se pudo extender la sesión. Tu token de dispositivo puede haber expirado. Por favor inicia sesión nuevamente.',
+                                        [
+                                            {
+                                                text: 'OK',
+                                                onPress: async () => {
+                                                    // Si falla la extensión, hacer logout y redirigir al login
+                                                    if (authStore && authStore.logout) {
+                                                        await authStore.logout();
+                                                    } else {
+                                                        await AsyncStorage.multiRemove(['token', 'userInfo']);
+                                                    }
+                                                    
+                                                    try {
+                                                        if (navigationRef) {
+                                                            navigationRef.reset({
+                                                                index: 0,
+                                                                routes: [{ name: 'LoginScreen' }],
+                                                            });
+                                                        }
+                                                    } catch (navError) {
+                                                        console.error('❌ Navigation error:', navError);
+                                                        navigationRef?.navigate?.('LoginScreen');
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    );
+                                }
+                            } catch (error) {
+                                console.error('❌ Error extending session:', error);
+                                Alert.alert(
+                                    'Error',
+                                    'Ocurrió un error al extender la sesión. Por favor inicia sesión nuevamente.',
+                                    [
+                                        {
+                                            text: 'OK',
+                                            onPress: async () => {
+                                                if (authStore && authStore.logout) {
+                                                    await authStore.logout();
+                                                } else {
+                                                    await AsyncStorage.multiRemove(['token', 'userInfo']);
+                                                }
+                                                
+                                                try {
+                                                    if (navigationRef) {
+                                                        navigationRef.reset({
+                                                            index: 0,
+                                                            routes: [{ name: 'LoginScreen' }],
+                                                        });
+                                                    }
+                                                } catch (navError) {
+                                                    console.error('❌ Navigation error:', navError);
+                                                    navigationRef?.navigate?.('LoginScreen');
+                                                }
+                                            }
+                                        }
+                                    ]
+                                );
+                            }
+                        } else {
+                            console.log('❌ Auth store or extendSession method not available');
+                            Alert.alert(
+                                'Error',
+                                'No se puede extender la sesión en este momento. Por favor inicia sesión nuevamente.',
+                                [
+                                    {
+                                        text: 'OK',
+                                        onPress: async () => {
+                                            if (authStore && authStore.logout) {
+                                                await authStore.logout();
+                                            } else {
+                                                await AsyncStorage.multiRemove(['token', 'userInfo']);
+                                            }
+                                            
+                                            try {
+                                                if (navigationRef) {
+                                                    navigationRef.reset({
+                                                        index: 0,
+                                                        routes: [{ name: 'LoginScreen' }],
+                                                    });
+                                                }
+                                            } catch (navError) {
+                                                console.error('❌ Navigation error:', navError);
+                                                navigationRef?.navigate?.('LoginScreen');
+                                            }
+                                        }
+                                    }
+                                ]
+                            );
+                        }
+                    }
                 }
-            ]
+            ],
+            { cancelable: false } // ✅ Prevenir que se cierre tocando fuera
         );
     } catch (error) {
         console.error('❌ Error handling unauthorized:', error);
@@ -137,9 +257,15 @@ ditoApi.interceptors.response.use(
         return response;
     },
     async (error) => {
-        // ✅ Manejar error 401 - redirigir al login
+        // ✅ Manejar error 401 - marcar sesión expirada y mostrar opciones
         if (error.response?.status === 401) {
-            console.log('🚫 401 Unauthorized - Redirecting to login...');
+            console.log('🚫 401 Unauthorized - Marking session as expired...');
+            
+            // ✅ Marcar sesión como expirada SIN redirigir automáticamente
+            if (authStore && authStore.markSessionExpired) {
+                authStore.markSessionExpired();
+            }
+            
             await handleUnauthorized();
             
             // Log del error 401 para debugging

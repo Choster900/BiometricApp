@@ -1,3 +1,3 @@
 
 
-export type AuthStatus = 'authenticated' | 'unauthenticated' | 'checking';
+export type AuthStatus = 'authenticated' | 'unauthenticated' | 'checking' | 'expired';
