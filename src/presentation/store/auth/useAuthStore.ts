@@ -535,7 +535,6 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
         const resp = await authValidateToken(deviceToken || '');
 
-        console.log(resp)
         if (!resp) {
             set({ status: 'unauthenticated', token: undefined, user: undefined });
             return false;
