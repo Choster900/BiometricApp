@@ -5,12 +5,20 @@ import { Text, View } from 'react-native';
 import { RootStackParamList } from '../navigation/StackNavigator';
 import { PropsWithChildren, useEffect } from 'react';
 import { useAuthStore } from '../store/auth/useAuthStore';
+import { setAuthStore } from '../../config/ditoApi';
 
 export const AuthProvider = ({ children }: PropsWithChildren) => {
 
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
-    const { checkStatus, status } = useAuthStore();
+    const authStore = useAuthStore();
+    const { checkStatus, status } = authStore;
+
+    // ✅ Configurar la referencia del store para ditoApi
+    useEffect(() => {
+        console.log('🔧 Configuring auth store for ditoApi...');
+        setAuthStore(authStore);
+    }, [authStore]);
 
     useEffect(() => {
         checkStatus();

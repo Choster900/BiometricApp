@@ -9,10 +9,15 @@ import { NavigationContainer } from '@react-navigation/native';
 import { StackNavigator } from './presentation/navigation/StackNavigator';
 import { useColorScheme } from 'react-native';
 import { AuthProvider } from './presentation/providers/AuthProvider';
+import { setNavigationRef } from './config/ditoApi';
+import { useRef } from 'react';
 
 export const App = () => {
 
     const colorScheme = useColorScheme();
+    
+    // ✅ Crear referencia para la navegación
+    const navigationRef = useRef<any>(null);
 
     const theme = colorScheme === 'dark' ? eva.dark : eva.light;
 
@@ -24,6 +29,14 @@ export const App = () => {
 
             <ApplicationProvider  {...eva} theme={theme}>
                 <NavigationContainer
+                    ref={navigationRef}
+                    onReady={() => {
+                        // ✅ Configurar la referencia para ditoApi cuando la navegación esté lista
+                        console.log('🚀 Navigation ready, setting ref...');
+                        console.log('🔍 Navigation ref current:', !!navigationRef.current);
+                        setNavigationRef(navigationRef.current);
+                        console.log('✅ Navigation ref configured for ditoApi');
+                    }}
                     theme={{
                         dark: colorScheme === 'dark',
                         colors: {

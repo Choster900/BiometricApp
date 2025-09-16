@@ -478,7 +478,16 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
     loginWithBiometrics: async () => {
         try {
-            // Usar el método dedicado del KeychainManager para obtener con biometría
+            // Primero verificar si la biometría está disponible
+            const biometryType = await Keychain.getSupportedBiometryType();
+            if (!biometryType) {
+                console.log('❌ No biometric authentication available on this device');
+                return false;
+            }
+
+            console.log('🔐 Biometric type available:', biometryType);
+
+            // Obtener device token normalmente primero
             const deviceToken = await KeychainManager.getDeviceToken();
 
             if (!deviceToken) {
@@ -486,16 +495,53 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
                 return false;
             }
 
-            await Keychain.setGenericPassword(
-                'device',
-                deviceToken,
-                {
-                    accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
-                    accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED,
-                }
-            );
+            // Crear una credencial temporal para verificación biométrica
+            const biometricServiceName = 'biometric-login-verification';
+            
+            try {
+                // Establecer credencial temporal con biometría
+                await Keychain.setInternetCredentials(
+                    biometricServiceName,
+                    'user',
+                    'verification',
+                    {
+                        accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
+                        accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED,
+                        authenticationPrompt: {
+                            title: 'Iniciar Sesión',
+                            subtitle: 'Verifica tu identidad para iniciar sesión',
+                            description: 'Usa tu huella dactilar o Face ID para acceder a tu cuenta',
+                            cancel: 'Cancelar',
+                        },
+                    }
+                );
 
-            console.log('🔐 Attempting biometric login with device token:', deviceToken);
+                // Verificar biometría accediendo a la credencial
+                await Keychain.getInternetCredentials(biometricServiceName, {
+                    authenticationPrompt: {
+                        title: 'Iniciar Sesión',
+                        subtitle: 'Verifica tu identidad para iniciar sesión',
+                        description: 'Usa tu huella dactilar o Face ID para acceder a tu cuenta',
+                        cancel: 'Cancelar',
+                    },
+                });
+
+                console.log('✅ Biometric verification successful');
+
+            } catch (biometricError: any) {
+
+                if (biometricError?.message?.includes('cancelled') || 
+                    biometricError?.message?.includes('UserCancel') ||
+                    biometricError?.message?.includes('Authentication was canceled by the user')) {
+                    console.log('❌ User cancelled biometric verification');
+                    return false;
+                }
+                
+                console.log('❌ Biometric verification failed:', biometricError);
+                return false;
+            }
+
+            console.log('🔐 Attempting biometric login with device token');
 
             const resp = await authLoginWithDeviceToken(deviceToken);
             if (!resp) {
@@ -503,24 +549,11 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
                 return false;
             }
 
-            console.log(resp)
-
-            // Validar si el device token usado sigue siendo activo después del login
-            /* const isTokenStillActive = (resp.user as any).allDeviceSessions?.some(
-                (session: any) => session.deviceToken === deviceToken && session.isActive
-            ); */
-
-            /* if (!isTokenStillActive) {
-                console.log('⚠️ Device token is no longer active, clearing from Keychain');
-
-            } else {
-                console.log('✅ Device token is still active');
-            } */
+            console.log('✅ Biometric login successful');
 
             await StorageAdapter.setItem('token', resp.token);
 
             const foundDeviceToken = resp.user.foundDeviceToken;
-
 
             set({
                 status: 'authenticated',
@@ -532,7 +565,9 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
             return true;
 
         } catch (biometricError: any) {
-            if (biometricError?.message?.includes('cancelled') || biometricError?.message?.includes('UserCancel')) {
+            if (biometricError?.message?.includes('cancelled') || 
+                biometricError?.message?.includes('UserCancel') ||
+                biometricError?.message?.includes('Authentication was canceled by the user')) {
                 console.log('❌ User cancelled biometric verification');
                 return false;
             }
@@ -558,7 +593,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
         set({
             status: 'authenticated',
-            token: resp.token,
+            //token: resp.token,
             biometricEnabled: resp.user.foundDeviceToken?.biometricEnabled || false,
             deviceToken: resp.user.foundDeviceToken?.deviceToken || null,
             user: resp.user
