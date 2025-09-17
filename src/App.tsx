@@ -17,19 +17,19 @@ export const App = () => {
 
     const colorScheme = useColorScheme();
     
-    // ✅ Crear referencia para la navegación
+    // Crear referencia para la navegación
     const navigationRef = useRef<any>(null);
     
     // Referencias para controlar el debounce del check status
     const lastCheckTime = useRef<number>(0);
     const checkDebounceTimeout = useRef<number | null>(null);
-    const DEBOUNCE_DELAY = 2000; // 2 segundos de delay entre checks
+    const DEBOUNCE_DELAY = 2000;
 
     const theme = colorScheme === 'dark' ? eva.dark : eva.light;
 
     const backgroundColor = colorScheme === 'dark' ? theme['color-basic-800'] : theme['color-basic-100'];
 
-    // ✅ Función para manejar cambios de navegación
+    // Función para manejar cambios de navegación
     const handleNavigationStateChange = () => {
         const currentTime = Date.now();
         const timeSinceLastCheck = currentTime - lastCheckTime.current;
