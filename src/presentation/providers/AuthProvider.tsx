@@ -14,15 +14,11 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     const authStore = useAuthStore();
     const { checkStatus, status } = authStore;
 
-    // ✅ Configurar la referencia del store para ditoApi
     useEffect(() => {
-        console.log('🔧 Configuring auth store for ditoApi...');
         setAuthStore(authStore);
     }, [authStore]);
 
-    // ✅ Check status inicial
     useEffect(() => {
-        console.log('🔄 Initial auth status check...');
         checkStatus();
     }, []);
 

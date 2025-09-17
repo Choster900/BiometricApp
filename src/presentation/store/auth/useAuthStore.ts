@@ -32,7 +32,7 @@ class KeychainManager {
             });
 
             if (credentials && typeof credentials !== 'boolean' && credentials.password) {
-                console.log('✅ Device token retrieved from Keychain');
+                
                 return credentials.password;
             }
 
@@ -600,8 +600,6 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
             const storedToken = await StorageAdapter.getItem('token');
 
             if (storedToken) {
-                // Hay token almacenado pero es inválido/expirado
-                console.log('⚠️ Token validation failed - setting status to expired');
                 set({ status: 'expired' });
             } else {
                 // No hay token almacenado
@@ -639,13 +637,11 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     },
 
     markSessionExpired: () => {
-        console.log('⚠️ Marking session as expired - NOT auto-redirecting');
         set({ status: 'expired' });
     },
 
     extendSession: async () => {
         try {
-            console.log('🔄 Attempting to extend session using device token...');
 
             // Obtener device token desde Keychain
             const deviceToken = await KeychainManager.getDeviceToken();
@@ -655,8 +651,6 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
                 return false;
             }
 
-            console.log('🔐 Using device token to extend session');
-
             // Usar el método existente de login con device token
             const resp = await authLoginWithDeviceToken(deviceToken);
 
@@ -664,8 +658,6 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
                 console.log('❌ Failed to extend session - device token may be invalid');
                 return false;
             }
-
-            console.log('✅ Session extended successfully');
 
             // Guardar el nuevo JWT token
             await StorageAdapter.setItem('token', resp.token);

@@ -12,9 +12,7 @@ let authStore: any = null; // ✅ Referencia al store de auth
  * Debe ser llamada desde el componente principal de navegación
  */
 const setNavigationRef = (ref: any) => {
-    console.log('🔧 Setting navigation ref:', !!ref);
     navigationRef = ref;
-    console.log('✅ Navigation ref set successfully');
 };
 
 /**
@@ -22,9 +20,7 @@ const setNavigationRef = (ref: any) => {
  * Permite hacer logout desde el interceptor
  */
 const setAuthStore = (store: any) => {
-    console.log('🔧 Setting auth store ref:', !!store);
     authStore = store;
-    console.log('✅ Auth store ref set successfully');
 };
 
 /**
@@ -33,10 +29,7 @@ const setAuthStore = (store: any) => {
  */
 const handleUnauthorized = async () => {
     try {
-        console.log('🔍 Navigation ref available:', !!navigationRef);
-        console.log('🔍 Auth store available:', !!authStore);
-        
-        // Solo mostrar alerta, SIN hacer logout automático
+
         Alert.alert(
             'Sesión Expirada',
             'Tu sesión ha expirado. ¿Qué deseas hacer?',
@@ -45,24 +38,17 @@ const handleUnauthorized = async () => {
                     text: 'Salir al Login',
                     style: 'cancel',
                     onPress: async () => {
-                        console.log('👤 User chose to go to login');
                         
                         // ✅ SOLO hacer logout si el usuario lo elige explícitamente
                         if (authStore && authStore.logout) {
-                            console.log('🔧 Using auth store logout...');
                             await authStore.logout();
                         } else {
                             // Fallback: Limpiar AsyncStorage manualmente
-                            console.log('🔧 Fallback: Manual cleanup...');
                             await AsyncStorage.multiRemove(['token', 'userInfo']);
                         }
-                        
-                        console.log('🚀 Attempting navigation to login...');
-                        
-                        // Intentar diferentes métodos de navegación
+
                         try {
                             if (navigationRef) {
-                                console.log('✅ Navigation ref exists, attempting reset...');
                                 
                                 // Método 1: Reset directo
                                 navigationRef.reset({
@@ -70,17 +56,13 @@ const handleUnauthorized = async () => {
                                     routes: [{ name: 'LoginScreen' }],
                                 });
                                 
-                                console.log('✅ Navigation reset completed');
                             } else {
                                 console.log('❌ Navigation ref not available');
                             }
                         } catch (navError) {
-                            console.error('❌ Navigation error:', navError);
-                            
-                            // Método alternativo: usar navigate si reset falla
+
                             try {
                                 navigationRef?.navigate?.('LoginScreen');
-                                console.log('✅ Fallback navigation completed');
                             } catch (fallbackError) {
                                 console.error('❌ Fallback navigation failed:', fallbackError);
                             }
@@ -90,16 +72,13 @@ const handleUnauthorized = async () => {
                 {
                     text: 'Extender Sesión',
                     onPress: async () => {
-                        console.log('� User chose to extend session');
-                        
+
                         if (authStore && authStore.extendSession) {
-                            console.log('🔧 Attempting to extend session...');
                             
                             try {
                                 const success = await authStore.extendSession();
                                 
                                 if (success) {
-                                    console.log('✅ Session extended successfully - staying on current screen');
                                     Alert.alert(
                                         'Sesión Extendida',
                                         'Tu sesión ha sido extendida exitosamente. Puedes continuar usando la aplicación.',
@@ -139,7 +118,6 @@ const handleUnauthorized = async () => {
                                     );
                                 }
                             } catch (error) {
-                                console.error('❌ Error extending session:', error);
                                 Alert.alert(
                                     'Error',
                                     'Ocurrió un error al extender la sesión. Por favor inicia sesión nuevamente.',
@@ -170,7 +148,6 @@ const handleUnauthorized = async () => {
                                 );
                             }
                         } else {
-                            console.log('❌ Auth store or extendSession method not available');
                             Alert.alert(
                                 'Error',
                                 'No se puede extender la sesión en este momento. Por favor inicia sesión nuevamente.',
@@ -253,13 +230,11 @@ ditoApi.interceptors.request.use(
 // Interceptor para responses - manejar errores y 401s
 ditoApi.interceptors.response.use(
     (response) => {
-        console.log(`✅ Response: ${response.status} ${response.config.url}`);
         return response;
     },
     async (error) => {
         // ✅ Manejar error 401 - marcar sesión expirada y mostrar opciones
         if (error.response?.status === 401) {
-            console.log('🚫 401 Unauthorized - Marking session as expired...');
             
             // ✅ Marcar sesión como expirada SIN redirigir automáticamente
             if (authStore && authStore.markSessionExpired) {

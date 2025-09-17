@@ -34,11 +34,8 @@ export const App = () => {
         const currentTime = Date.now();
         const timeSinceLastCheck = currentTime - lastCheckTime.current;
 
-        console.log(`🧭 Navigation state changed, time since last check: ${timeSinceLastCheck}ms`);
-
         // Solo hacer check si ha pasado suficiente tiempo (debounce)
         if (timeSinceLastCheck > DEBOUNCE_DELAY) {
-            console.log('🔄 Performing auth status check on navigation state change...');
             
             // Limpiar timeout anterior si existe
             if (checkDebounceTimeout.current) {
@@ -55,8 +52,6 @@ export const App = () => {
                 }
                 checkDebounceTimeout.current = null;
             }, 100);
-        } else {
-            console.log('⏱️ Skipping auth check due to debounce');
         }
     };
 
@@ -69,13 +64,7 @@ export const App = () => {
                     ref={navigationRef}
                     onStateChange={handleNavigationStateChange}
                     onReady={() => {
-                        // ✅ Configurar la referencia para ditoApi cuando la navegación esté lista
-                        console.log('🚀 Navigation ready, setting ref...');
-                        console.log('🔍 Navigation ref current:', !!navigationRef.current);
-                        setNavigationRef(navigationRef.current);
-                        console.log('✅ Navigation ref configured for ditoApi');
-                        
-                        // Inicializar el timestamp del último check
+                        setNavigationRef(navigationRef.current)
                         lastCheckTime.current = Date.now();
                     }}
                     theme={{
