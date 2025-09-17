@@ -738,7 +738,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
         // Verificar que tenemos un device token y que la verificación biométrica fue exitosa
         if (!existingDeviceToken) {
-            console.error('❌ Biometric verification failed or no device token found, cannot disable biometrics');
+           // console.error('❌ Biometric verification failed or no device token found, cannot disable biometrics');
             return false;
         }
 
