@@ -15,7 +15,6 @@ export const DashboardScreen = () => {
         <TopNavigationAction
             icon={MenuIcon}
             onPress={() => {
-                console.log('🍔 Dashboard: Menu button pressed!');
                 navigation.dispatch(DrawerActions.openDrawer());
             }}
         />
@@ -24,8 +23,8 @@ export const DashboardScreen = () => {
     return (
         <Layout style={styles.container}>
             <TopNavigation
-                title='Dashboard'
-                alignment='center'
+               /*  title='Dashboard' */
+                alignment='start'
                 accessoryLeft={renderMenuAction}
                 style={styles.topNav}
             />
@@ -114,15 +113,15 @@ export const DashboardScreen = () => {
                                 <Icon name='clock-outline' width={20} height={20} fill='#3366FF' />
                                 <Text category='h6' style={styles.cardTitle}>Actividad Reciente</Text>
                             </View>
-                            <Button 
-                                size='tiny' 
-                                appearance='ghost' 
-                                onPress={() => {}}
+                            <Button
+                                size='tiny'
+                                appearance='ghost'
+                                onPress={() => { }}
                             >
                                 Ver todo
                             </Button>
                         </View>
-                        
+
                         <View style={styles.activityList}>
                             <View style={styles.activityItem}>
                                 <View style={[styles.activityDot, styles.successDot]} />
@@ -131,7 +130,7 @@ export const DashboardScreen = () => {
                                     <Text category='c1' style={styles.activityTime}>hace 2 minutos</Text>
                                 </View>
                             </View>
-                            
+
                             <View style={styles.activityItem}>
                                 <View style={[styles.activityDot, styles.primaryDot]} />
                                 <View style={styles.activityContent}>
@@ -139,7 +138,7 @@ export const DashboardScreen = () => {
                                     <Text category='c1' style={styles.activityTime}>hace 15 minutos</Text>
                                 </View>
                             </View>
-                            
+
                             <View style={styles.activityItem}>
                                 <View style={[styles.activityDot, styles.infoDot]} />
                                 <View style={styles.activityContent}>
@@ -154,19 +153,19 @@ export const DashboardScreen = () => {
                     <Card style={styles.quickActionsCard}>
                         <Text category='h6' style={styles.sectionTitle}>Acciones Rápidas</Text>
                         <View style={styles.quickActionsRow}>
-                            <Button 
-                                style={styles.quickActionButton} 
+                            <Button
+                                style={styles.quickActionButton}
                                 appearance='outline'
                                 accessoryLeft={(props) => <Icon {...props} name='plus-outline' />}
-                                onPress={() => {}}
+                                onPress={() => { }}
                             >
                                 Nuevo
                             </Button>
-                            <Button 
-                                style={styles.quickActionButton} 
+                            <Button
+                                style={styles.quickActionButton}
                                 appearance='outline'
                                 accessoryLeft={(props) => <Icon {...props} name='eye-outline' />}
-                                onPress={() => {}}
+                                onPress={() => { }}
                             >
                                 Ver Todo
                             </Button>
@@ -181,9 +180,10 @@ export const DashboardScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F7F9FC',
+        //backgroundColor: '#F7F9FC',
     },
     topNav: {
+        paddingTop: 40,
         elevation: 0,
         shadowOpacity: 0,
     },
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
         padding: 20,
         paddingBottom: 40,
     },
-    
+
     // Header mejorado
     headerSection: {
         alignItems: 'center',
