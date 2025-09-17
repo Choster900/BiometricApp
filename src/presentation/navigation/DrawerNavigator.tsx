@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerContentComponentProps } from '@react-navigation/drawer';
 import { Layout, Text, Icon, Button, Avatar, Divider } from '@ui-kitten/components';
 import { BottomTabsNavigator } from './BottomTabsNavigator';
@@ -153,6 +153,10 @@ export const DrawerNavigator = () => {
                 },
                 drawerType: 'slide',
                 overlayColor: 'rgba(0,0,0,0.5)',
+                // Permite abrir el drawer deslizando desde prácticamente cualquier parte de la pantalla.
+                // Ajusta el valor si interfiere con otros gestos (por ejemplo: Dimensions.get('window').width * 0.8)
+                swipeEdgeWidth: Dimensions.get('window').width, // área activa para gesto horizontal
+                swipeEnabled: true,
             }}
         >
             <Drawer.Screen
