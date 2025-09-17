@@ -337,7 +337,6 @@ export interface AuthState {
     getBiometricStatus: () => Promise<boolean>;
 
     // Security
-    allowMultipleSessionsOptions: (allow: boolean) => Promise<void>;
     disableBiometrics: () => Promise<boolean>; // Cambiado a boolean para indicar éxito/fallo
 }
 
@@ -774,36 +773,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
             return false;
         }
-    },
-
-    allowMultipleSessionsOptions: async (allow: boolean) => {
-        try {
-            const { user } = get();
-            if (!user) {
-                console.log('❌ No user found in state');
-                return;
-            }
-
-            // Obtener device token usando el método optimizado
-            const storedDeviceToken = await KeychainManager.getDeviceToken();
-
-            // Verificar si tenemos un device token válido
-            if (!storedDeviceToken) {
-                console.error('❌ Cannot update multiple sessions setting: No device token available');
-                throw new Error('Device token required for this operation');
-            }
-
-            await allowMultipleSessionsOptions(allow, storedDeviceToken);
-            console.log(`✅ Multiple sessions ${allow ? 'enabled' : 'disabled'} successfully`);
-
-            // Actualizar el estado local
-            set({ user: { ...user, allowMultipleSessions: allow } as any });
-
-        } catch (error) {
-            console.error('❌ Error updating multiple sessions setting:', error);
-            throw error; // Re-throw para que el componente pueda manejar el error
-        }
-    },
+    }
 
 
 
