@@ -29,46 +29,65 @@ export const ProfileScreen = () => {
                 accessoryLeft={renderMenuAction}
             />
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            <ScrollView 
+                style={styles.scrollView} 
+                contentContainerStyle={styles.content}
+                showsVerticalScrollIndicator={false}
+            >
                 <Card style={styles.profileCard}>
+                    {/* Header centrado */}
                     <View style={styles.profileHeader}>
                         <Avatar
                             size='giant'
-                            source={{ uri: 'https://via.placeholder.com/150/3366FF/FFFFFF?text=U' }}
+                            ImageComponent={() => (
+                                <Icon
+                                    name='person-outline'
+                                    style={{ width: 80, height: 80 }}
+                                    fill='#3366FF'
+                                />
+                            )}
                             style={styles.avatar}
                         />
-                        <View style={styles.profileInfo}>
-                            <Text category='h5' style={styles.userName}>
-                                {user?.fullName || 'Usuario Demo'}
-                            </Text>
-                            <Text category='s1' appearance='hint' style={styles.userEmail}>
-                                {user?.email || 'demo@example.com'}
-                            </Text>
-                            <Text category='c1' appearance='hint' style={styles.userRole}>
-                                Senior Developer
-                            </Text>
-                        </View>
+                    </View>
+                    
+                    {/* Información centrada */}
+                    <View style={styles.profileInfo}>
+                        <Text category='h4' style={styles.userName}>
+                            {user?.fullName || 'Usuario Demo'}
+                        </Text>
+                        <Text category='s1' appearance='hint' style={styles.userEmail}>
+                            {user?.email || 'demo@example.com'}
+                        </Text>
+                        <Text category='c1' appearance='hint' style={styles.userRole}>
+                            Senior Developer
+                        </Text>
                     </View>
 
-                    <Button
-                        style={styles.editButton}
-                        appearance='outline'
-                        size='small'
-                        accessoryLeft={(props) => <Icon {...props} name='edit-outline' />}
-                    >
-                        Edit Profile
-                    </Button>
+                    {/* Botón centrado con mejor espaciado */}
+                    <View style={styles.buttonContainer}>
+                        <Button
+                            style={styles.editButton}
+                            appearance='outline'
+                            size='medium'
+                            accessoryLeft={(props) => <Icon {...props} name='edit-outline' />}
+                        >
+                            Edit Profile
+                        </Button>
+                    </View>
                 </Card>
 
-
-                <Button
-                    style={styles.logoutButton}
-                    status='danger'
-                    onPress={logout}
-                    accessoryLeft={(props) => <Icon {...props} name='log-out-outline' />}
-                >
-                    Logout
-                </Button>
+                {/* Botón de logout centrado */}
+                <View style={styles.logoutContainer}>
+                    <Button
+                        style={styles.logoutButton}
+                        status='danger'
+                        size='medium'
+                        onPress={logout}
+                        accessoryLeft={(props) => <Icon {...props} name='log-out-outline' />}
+                    >
+                        Logout
+                    </Button>
+                </View>
             </ScrollView>
         </Layout>
     );
@@ -78,37 +97,69 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
-    content: {
+    scrollView: {
         flex: 1,
-        padding: 16,
+    },
+    content: {
+        flexGrow: 1,
+        padding: 20,
+        justifyContent: 'center',
     },
     profileCard: {
-        marginBottom: 16,
-        paddingBottom: 16,
+        marginBottom: 24,
+        paddingVertical: 24,
+        paddingHorizontal: 20,
+        borderRadius: 16,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
     },
     profileHeader: {
-        flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 16,
+        marginBottom: 20,
     },
     avatar: {
-        marginRight: 16,
+        borderWidth: 3,
+        borderColor: '#E4E9F2',
     },
     profileInfo: {
-        flex: 1,
+        alignItems: 'center',
+        marginBottom: 24,
     },
     userName: {
-        marginBottom: 4,
+        marginBottom: 8,
+        fontWeight: '600',
+        textAlign: 'center',
     },
     userEmail: {
-        marginBottom: 2,
+        marginBottom: 6,
+        textAlign: 'center',
     },
     userRole: {
         fontStyle: 'italic',
+        textAlign: 'center',
+    },
+    buttonContainer: {
+        alignItems: 'center',
     },
     editButton: {
-        alignSelf: 'center',
+        minWidth: 140,
+        borderRadius: 20,
     },
+    logoutContainer: {
+        alignItems: 'center',
+        marginTop: 16,
+    },
+    logoutButton: {
+        minWidth: 140,
+        borderRadius: 20,
+    },
+    // Estilos no utilizados pero mantenidos por compatibilidad
     statsCard: {
         marginBottom: 16,
     },
@@ -178,8 +229,5 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         marginBottom: 12,
-    },
-    logoutButton: {
-        marginBottom: 24,
     },
 });
