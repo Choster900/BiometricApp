@@ -1,4 +1,4 @@
-import { API_URL, API_URL_ANDROID, API_URL_IOS, STAGE } from "@env";
+import { API_URL, API_URL_ANDROID, API_URL_IOS, PUBLIC_KEY, STAGE } from "@env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { Platform, Alert } from "react-native";
@@ -218,6 +218,8 @@ ditoApi.interceptors.request.use(
         if (token) {
             config.headers!['Authorization'] = `Bearer ${token}`;
         }
+        
+        config.headers!['x-public-key'] = PUBLIC_KEY;
 
         return config;
     },
